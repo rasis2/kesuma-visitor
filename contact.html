@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ms"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sokongan — Kesuma JMB</title>
+  <link rel="manifest" href="site.webmanifest"><link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .wa-btn{display:flex;align-items:center;justify-content:center;width:52px;height:52px;background:#25D366;border-radius:50%;text-decoration:none;font-size:26px;transition:opacity .2s;margin:0 auto}
+    .wa-btn:hover{opacity:.85}
+    .faq-item{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px;transition:border-color .2s}
+    .faq-item.open{border-color:rgba(var(--accent-rgb),.35)}
+    .faq-q{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;font-size:13px;font-weight:600;line-height:1.5}
+    .faq-chevron{font-size:11px;color:var(--text-muted);flex-shrink:0;transition:transform .25s}
+    .faq-item.open .faq-chevron{transform:rotate(180deg)}
+    .faq-a{display:none;padding:12px 16px 14px;font-size:13px;color:var(--text-muted);line-height:1.7;border-top:1px solid var(--border)}
+    .faq-item.open .faq-a{display:block}
+    .cat-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin:20px 0 8px 2px}
+    .new-badge{display:inline-block;background:rgba(76,175,125,.15);color:var(--green);border:1px solid rgba(76,175,125,.25);font-size:9px;font-weight:700;padding:1px 6px;border-radius:100px;margin-left:6px;vertical-align:middle}
+  </style>
+</head><body>
+  <nav class="nav" id="mainNav"></nav>
+  <main class="main">
+    <div class="page-header animate-in">
+      <div class="page-icon gold">💬</div>
+      <h1 class="page-title">Sokongan</h1>
+      <p class="page-subtitle">Soalan lazim & hubungi kami</p>
+    </div>
+    <div class="section animate-in" style="animation-delay:.05s;text-align:center">
+      <div class="section-title">HUBUNGI KAMI</div>
+      <a href="https://wa.me/60145269960" target="_blank" class="wa-btn">📲</a>
+    </div>
+    <div class="animate-in" style="animation-delay:.08s" id="faqContainer"></div>
+  </main>
+  <script src="js/i18n.js"></script><script src="js/theme.js"></script><script src="js/nav.js"></script>
+  <script>
+    renderNav('contact_title')
+    const faqs=[
+      {cat:'SISTEM PELAWAT',items:[
+        {q:'Saya daftar tapi tak dapat masuk.',a:'Pendaftaran sendiri memerlukan kelulusan pemilik unit. Pemilik perlu login → tab Lulus → Lulus. Semak status di halaman Semak Status.'},
+        {q:'Guard kata status belum "Diluluskan".',a:'Betul. Visitor yang daftar sendiri perlu tunggu pemilik lulus dulu. Visitor yang didaftar oleh owner auto-lulus serta-merta.'},
+        {q:'QR code sudah tamat tempoh.',a:'QR sah 24 jam selepas diluluskan. Minta owner daftar semula atau hubungi pemilik unit untuk lulus semula.'},
+      ]},
+      {cat:'OWNER & TENANT',items:[
+        {q:'Saya tidak boleh log masuk.',a:'Pastikan nombor telefon anda betul dan telah didaftarkan oleh owner atau admin. No. owner dan tenant adalah berbeza.'},
+        {q:'Tenant boleh buat apa?',a:'Tenant boleh login, daftar pelawat, lulus pelawat walk-in, dan tukar nombor telefon sendiri. Tenant tidak boleh edit nombor owner atau tenant lain.'},
+        {q:'Boleh tambah berapa tenant?',a:'Maksimum 3 nombor tenant per unit. Owner yang tambah/buang nombor tenant melalui tab Tetapan.'},
+      ]},
+      {cat:'ADMIN & SECURITY',items:[
+        {q:'PIN untuk semua peranan?',a:'Owner/Tenant: login telefon (no PIN). Security: 1125. Admin: 1125.',isNew:true},
+        {q:'Guard boleh register visitor?',a:'Ya. Guard pilih unit, sistem tunjuk no. owner & tenant — guard call/wasap owner untuk confirm, kemudian klik "Lulus & Check In".'},
+        {q:'Admin boleh edit nombor telefon?',a:'Ya. Admin → tab Unit → cari unit → edit nombor owner dan/atau tenant → Simpan.'},
+      ]},
+      {cat:'TEKNIKAL',items:[
+        {q:'Data disimpan di mana?',a:'Supabase (PostgreSQL) di Singapore dengan Row Level Security. Tiada kata laluan disimpan.'},
+        {q:'Sistem ni free?',a:'100% percuma untuk penghuni Residensi Kesuma. Netlify + Supabase free tier.'},
+      ]},
+    ]
+    const container=document.getElementById('faqContainer')
+    faqs.forEach(group=>{
+      const cat=document.createElement('div'); cat.className='cat-label'; cat.textContent=group.cat; container.appendChild(cat)
+      group.items.forEach(faq=>{
+        const div=document.createElement('div'); div.className='faq-item'
+        div.innerHTML=`<div class="faq-q" onclick="this.closest('.faq-item').classList.toggle('open')"><span>${faq.q}${faq.isNew?'<span class="new-badge">NEW</span>':''}</span><span class="faq-chevron">▼</span></div><div class="faq-a">${faq.a}</div>`
+        container.appendChild(div)
+      })
+    })
+  </script>
+</body></html>

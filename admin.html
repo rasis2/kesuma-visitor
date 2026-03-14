@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Kesuma JMB</title>
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .tab-bar{display:flex;gap:6px;margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:4px}
+    .tab{flex:1;text-align:center;padding:8px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text-muted)}
+    .tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+    .vis-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
+    .vis-row:last-child{border-bottom:none}
+    .vis-row-name{font-weight:600}
+    .vis-row-meta{font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+    .badge-urgent{background:rgba(224,92,92,.15);color:var(--red);border:1px solid rgba(224,92,92,.3)}
+    .phone-tag{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:11px;font-family:'JetBrains Mono',monospace;margin:2px}
+  </style>
+</head>
+<body>
+  <nav class="nav" id="mainNav"></nav>
+
+  <!-- PIN GATE -->
+  <div id="pinGate" style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 57px)">
+    <div style="width:100%;max-width:360px;padding:20px">
+      <div class="section animate-in">
+        <div class="page-icon red" style="margin-bottom:18px">⚙️</div>
+        <h2 style="font-family:var(--heading-font);font-size:22px;font-weight:800;margin-bottom:5px" id="txt-pin-title"></h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px" id="txt-pin-sub"></p>
+        <div class="field"><label id="txt-pin-label"></label><input type="password" id="adminPin" maxlength="10" onkeydown="if(event.key==='Enter')unlockAdmin()" placeholder="••••"><div class="error-text" id="pinError"></div></div>
+        <button class="btn btn-gold" onclick="unlockAdmin()" id="txt-enter-btn"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" style="display:none">
+    <main class="main">
+      <div class="page-header animate-in">
+        <div class="page-icon red">⚙️</div>
+        <h1 class="page-title" id="txt-title"></h1>
+        <p class="page-subtitle" id="txt-subtitle"></p>
+      </div>
+
+      <!-- STATS -->
+      <div class="section animate-in" style="display:flex;gap:0;padding:0;overflow:hidden;margin-bottom:14px">
+        <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+          <div id="statTotal" class="num" style="font-size:22px">—</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Unit</div>
+        </div>
+        <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+          <div id="statToday" class="num" style="font-size:22px;color:var(--accent)">—</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px" id="txt-stat-today"></div>
+        </div>
+        <div style="flex:1;padding:14px;text-align:center">
+          <div id="statIn" class="num" style="font-size:22px;color:var(--green)">—</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px" id="txt-stat-in"></div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-bar animate-in">
+        <div class="tab active" onclick="switchTab('visitors')" id="tab-visitors"></div>
+        <div class="tab" onclick="switchTab('units')" id="tab-units"></div>
+      </div>
+
+      <!-- VISITORS TAB -->
+      <div id="tabVisitors">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <input id="visSearch" oninput="applyVisFilter()" style="flex:1;min-width:120px;height:40px" placeholder="Cari nama, unit, kod...">
+          <div class="select-wrap" style="flex:0 0 150px">
+            <select id="visFilter" onchange="applyVisFilter()" style="height:40px">
+              <option value="all" id="vopt-all"></option>
+              <option value="Pending" id="vopt-pending"></option>
+              <option value="Approved" id="vopt-approved"></option>
+              <option value="Checked In" id="vopt-in"></option>
+              <option value="Checked Out" id="vopt-out"></option>
+              <option value="Rejected" id="vopt-rejected"></option>
+            </select>
+          </div>
+        </div>
+        <div class="section animate-in" style="padding:10px 16px"><div id="visitorList"></div></div>
+      </div>
+
+      <!-- UNITS TAB -->
+      <div id="tabUnits" style="display:none">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input id="unitSearch" oninput="applyUnitFilter()" style="flex:1;height:40px" placeholder="Cari unit atau telefon...">
+        </div>
+        <div class="section animate-in" style="padding:0;overflow:hidden">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th id="col-unit"></th>
+                <th id="col-owner"></th>
+                <th id="col-tenants"></th>
+                <th></th>
+              </tr></thead>
+              <tbody id="unitTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pagination animate-in">
+          <button class="btn btn-outline" onclick="prevPage()" id="txt-prev"></button>
+          <span class="page-info" id="pageInfo">—</span>
+          <button class="btn btn-outline" onclick="nextPage()" id="txt-next"></button>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpers.js"></script>
+  <script>
+    renderNav('card_admin')
+    document.getElementById('txt-pin-title').textContent=t('admin_pin_title')
+    document.getElementById('txt-pin-sub').textContent=t('admin_pin_subtitle')
+    document.getElementById('txt-pin-label').textContent=t('admin_pin_label')
+    document.getElementById('txt-enter-btn').textContent=t('enter')
+    document.getElementById('txt-title').textContent=t('admin_title')
+    document.getElementById('txt-subtitle').textContent=t('admin_subtitle')
+    document.getElementById('txt-stat-today').textContent=t('today')
+    document.getElementById('txt-stat-in').textContent=t('checkedin')
+    document.getElementById('tab-visitors').textContent='📋 '+t('admin_tab_visitors')
+    document.getElementById('tab-units').textContent='🏠 '+t('admin_tab_units')
+    document.getElementById('vopt-all').textContent=t('admin_filter_all')
+    document.getElementById('vopt-pending').textContent=t('vis_status_pending')
+    document.getElementById('vopt-approved').textContent=t('vis_status_approved')
+    document.getElementById('vopt-in').textContent=t('vis_status_checkedin')
+    document.getElementById('vopt-out').textContent=t('vis_status_checkout')
+    document.getElementById('vopt-rejected').textContent=t('vis_status_rejected')
+    document.getElementById('col-unit').textContent=t('admin_col_unit')
+    document.getElementById('col-owner').textContent=t('admin_col_owner')
+    document.getElementById('col-tenants').textContent=t('admin_col_tenants')
+    document.getElementById('txt-prev').textContent=t('admin_prev')
+    document.getElementById('txt-next').textContent=t('admin_next')
+
+    let allVisitors=[], allOwners=[], filteredOwners=[], page=1
+    const perPage=15
+
+    function unlockAdmin() {
+      if(document.getElementById('adminPin').value!=='1125'){ document.getElementById('pinError').textContent=t('admin_pin_error');return }
+      document.getElementById('pinGate').style.display='none'
+      document.getElementById('dashboard').style.display='block'
+      loadAll()
+    }
+
+    async function loadAll() {
+      ;[allVisitors, allOwners]=await Promise.all([apiGetAllVisitors(), apiGetAllOwners()])
+      const today=new Date().toDateString()
+      document.getElementById('statTotal').textContent=allOwners.length
+      document.getElementById('statToday').textContent=allVisitors.filter(v=>new Date(v.created_at).toDateString()===today).length
+      document.getElementById('statIn').textContent=allVisitors.filter(v=>v.status==='Checked In').length
+      filteredOwners=[...allOwners]
+      applyVisFilter()
+      renderUnits()
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-visitors').classList.toggle('active',tab==='visitors')
+      document.getElementById('tab-units').classList.toggle('active',tab==='units')
+      document.getElementById('tabVisitors').style.display=tab==='visitors'?'block':'none'
+      document.getElementById('tabUnits').style.display=tab==='units'?'block':'none'
+    }
+
+    // VISITORS
+    function applyVisFilter() {
+      const search=document.getElementById('visSearch').value.toUpperCase()
+      const status=document.getElementById('visFilter').value
+      let list=status==='all'?allVisitors:allVisitors.filter(v=>v.status===status)
+      if(search) list=list.filter(v=>v.ref_code.includes(search)||v.name.toUpperCase().includes(search)||v.unit.includes(search))
+      renderVisitors(list)
+    }
+
+    function renderVisitors(list) {
+      const el=document.getElementById('visitorList')
+      if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">🪪</div><p>Tiada rekod.</p></div>';return}
+      el.innerHTML=list.map(v=>`
+        <div class="vis-row">
+          <div style="flex:1;min-width:0">
+            <div class="vis-row-name">${v.name}</div>
+            <div class="vis-row-meta">${v.ref_code} · Unit ${v.unit} · ${fmtDate(v.created_at)}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${v.purpose} · ${v.vehicle_plate||'—'} · ${regByLabel(v.registered_by)}</div>
+            ${v.checked_in_at?`<div style="font-size:11px;color:var(--green)">↓ ${fmtDate(v.checked_in_at)}</div>`:''}
+            ${v.checked_out_at?`<div style="font-size:11px;color:var(--text-muted)">↑ ${fmtDate(v.checked_out_at)}</div>`:''}
+          </div>
+          <div style="flex-shrink:0">${statusBadge(v.status)}</div>
+        </div>`).join('')
+    }
+
+    // UNITS
+    function applyUnitFilter() {
+      const s=document.getElementById('unitSearch').value.toLowerCase()
+      filteredOwners=allOwners.filter(o=>o.unit.toLowerCase().includes(s)||o.phone.includes(s)||(o.tenant1&&o.tenant1.includes(s))||(o.tenant2&&o.tenant2.includes(s))||(o.tenant3&&o.tenant3.includes(s)))
+      page=1; renderUnits()
+    }
+
+    function renderUnits() {
+      const start=(page-1)*perPage
+      const slice=filteredOwners.slice(start,start+perPage)
+      document.getElementById('pageInfo').textContent=page+' / '+Math.max(1,Math.ceil(filteredOwners.length/perPage))
+      document.getElementById('unitTableBody').innerHTML=slice.map(o=>`
+        <tr>
+          <td><strong style="font-family:'JetBrains Mono',monospace;font-size:13px">${o.unit}</strong></td>
+          <td><input id="op-${o.unit}" value="${o.phone}" style="min-width:110px;font-size:12px"></td>
+          <td>
+            <input id="t1-${o.unit}" value="${o.tenant1||''}" placeholder="Tenant 1" style="min-width:100px;font-size:12px;margin-bottom:3px;display:block">
+            <input id="t2-${o.unit}" value="${o.tenant2||''}" placeholder="Tenant 2" style="min-width:100px;font-size:12px;margin-bottom:3px;display:block">
+            <input id="t3-${o.unit}" value="${o.tenant3||''}" placeholder="Tenant 3" style="min-width:100px;font-size:12px;display:block">
+          </td>
+          <td><button class="btn-green" onclick="saveUnit('${o.unit}')" style="font-size:11px;padding:5px 10px">${t('save')}</button></td>
+        </tr>`).join('')
+    }
+
+    async function saveUnit(unit) {
+      const phone=document.getElementById('op-'+unit).value
+      const t1=document.getElementById('t1-'+unit).value||null
+      const t2=document.getElementById('t2-'+unit).value||null
+      const t3=document.getElementById('t3-'+unit).value||null
+      const ok=await apiAdminUpdateOwner(unit,{phone,tenant1:t1,tenant2:t2,tenant3:t3})
+      showToast(ok?'Unit '+unit+' '+t('admin_saved'):t('admin_save_error'),ok?'success':'error-toast')
+      if(ok){const o=allOwners.find(x=>x.unit===unit);if(o){o.phone=phone;o.tenant1=t1;o.tenant2=t2;o.tenant3=t3}}
+    }
+
+    function prevPage(){if(page>1){page--;renderUnits()}}
+    function nextPage(){if(page<Math.ceil(filteredOwners.length/perPage)){page++;renderUnits()}}
+  </script>
+</body>
+</html>

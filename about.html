@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ms"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Kesuma JMB</title>
+  <link rel="manifest" href="site.webmanifest"><link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .profile-card{text-align:center;padding:28px 20px 20px}
+    .avatar{width:72px;height:72px;border-radius:50%;background:var(--accent-dim);border:2px solid rgba(var(--accent-rgb),.3);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px}
+    .tag{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(var(--accent-rgb),.2);margin:3px}
+    .tag.green{background:rgba(76,175,125,.1);color:var(--green);border-color:rgba(76,175,125,.2)}
+    .tag.blue{background:rgba(99,179,237,.1);color:#63b3ed;border-color:rgba(99,179,237,.2)}
+    .tag.purple{background:rgba(159,122,234,.1);color:#9f7aea;border-color:rgba(159,122,234,.2)}
+    .stack-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .story-text{font-size:13px;color:var(--text-muted);line-height:1.8}
+    .story-text p{margin-bottom:14px}
+  </style>
+</head><body>
+  <nav class="nav" id="mainNav"></nav>
+  <main class="main">
+    <div class="section animate-in" style="padding-bottom:0">
+      <div class="profile-card">
+        <div class="avatar">✦</div>
+        <div style="font-family:var(--heading-font);font-size:20px;font-weight:800;margin-bottom:4px">Araduas Rasis Razali</div>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;max-width:340px;margin:0 auto">QA engineer yang vibe code untuk mudahkan urusan jiran tetangga di Residensi Kesuma, Beranang.</p>
+      </div>
+    </div>
+    <div class="section animate-in" style="animation-delay:.05s">
+      <div class="section-title">CERITA DI SEBALIK PROJEK</div>
+      <div class="story-text">
+        <p>Tiada rekod pelawat, siapa masuk siapa keluar pun tak dapat dikesan. Guard pun susah nak confirm pelawat sah atau tidak.</p>
+        <p>Sebagai penghuni Residensi Kesuma, aku putuskan nak buat sesuatu. Dengan bantuan <strong>Claude AI</strong> sebagai copilot coding, sistem ini dibina dalam masa beberapa minggu — tanpa server, tanpa kos bulanan.</p>
+        <p>Projek <strong>jiran untuk jiran</strong> — dibina dengan niat ikhlas untuk menjadikan kehidupan di Residensi Kesuma lebih selamat dan teratur.</p>
+      </div>
+    </div>
+    <div class="section animate-in" style="animation-delay:.1s">
+      <div class="section-title">TECH STACK</div>
+      <div style="margin-bottom:12px"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px">FRONTEND</div><div class="stack-row"><span class="tag">HTML5</span><span class="tag">CSS3</span><span class="tag">Vanilla JS</span></div></div>
+      <div style="margin-bottom:12px"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px">BACKEND & DATABASE</div><div class="stack-row"><span class="tag green">Supabase</span><span class="tag green">PostgreSQL</span><span class="tag green">Row Level Security</span></div></div>
+      <div style="margin-bottom:12px"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px">TOOLS & DEPLOYMENT</div><div class="stack-row"><span class="tag blue">Netlify</span><span class="tag blue">GitHub</span><span class="tag blue">QRCode.js</span><span class="tag blue">Claude AI</span></div></div>
+      <div><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px">FEATURES</div><div class="stack-row"><span class="tag purple">2 Languages</span><span class="tag purple">4 Themes</span><span class="tag purple">QR Code</span><span class="tag purple">Realtime DB</span><span class="tag purple">No Server</span></div></div>
+    </div>
+    <div class="section animate-in" style="animation-delay:.15s">
+      <div class="section-title">SISTEM YANG DIBINA (v2)</div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:2">
+        🪪 <strong>Sistem Pelawat</strong> — Daftar, jana QR, owner/tenant lulus, guard check in/out<br>
+        🏠 <strong>Owner & Tenant</strong> — Login phone, daftar pelawat, urus tetapan unit<br>
+        🛡️ <strong>Security Dashboard</strong> — Scan QR, daftar walk-in, pantau semua pelawat<br>
+        ⚙️ <strong>Admin Dashboard</strong> — Log pelawat semua unit, urus no. owner & tenant
+      </div>
+    </div>
+  </main>
+  <script src="js/i18n.js"></script><script src="js/theme.js"></script><script src="js/nav.js"></script>
+  <script>renderNav('card_about')</script>
+</body></html>

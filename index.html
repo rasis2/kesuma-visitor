@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kesuma JMB Hub</title>
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body{display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden;padding-top:60px;box-sizing:border-box}
+    body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(var(--accent-rgb),.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+    .topbar{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+    .topbar-logo{font-family:var(--heading-font);font-size:13px;font-weight:800;color:var(--text-muted);letter-spacing:-.3px}
+    .topbar-right{display:flex;gap:8px;align-items:center}
+    .hero{position:relative;z-index:1;text-align:center;padding:28px clamp(12px,4vw,40px) 40px;width:min(480px,100%);margin:0 auto;box-sizing:border-box}
+    .badge{display:inline-block;background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),.3);color:var(--accent);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:20px;animation:fadeIn .5s ease both}
+    h1{font-family:var(--heading-font);font-size:clamp(34px,7vw,50px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:10px;animation:fadeIn .5s .08s ease both}
+    h1 span{color:var(--accent)}
+    .subtitle{color:var(--text-muted);font-size:13px;line-height:1.7;margin-bottom:28px;animation:fadeIn .5s .16s ease both}
+    .sys-block{width:100%;margin:0 auto 14px;animation:fadeIn .5s ease both}
+    .sys-label-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 2px}
+    .sys-tag{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}
+    .sys-line{flex:1;height:1px;background:var(--border)}
+    .sub-links{display:grid;gap:7px}
+    .sub-links-2{grid-template-columns:1fr 1fr}
+    .sub-links-3{grid-template-columns:1fr 1fr 1fr}
+    .sub-links-4{grid-template-columns:repeat(4,1fr)}
+    .sub-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:12px;font-weight:600;padding:10px 12px}
+    .sub-card:hover{border-color:rgba(var(--accent-rgb),.35);background:var(--surface)}
+    .sub-card-lg{padding:14px 12px;align-items:flex-start!important;gap:10px}
+    .sub-card-lg .sub-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+    .sub-name{font-size:12px;font-weight:700;font-family:var(--heading-font);margin-bottom:2px}
+    .sub-desc{font-size:10px;color:var(--text-muted);font-weight:400;line-height:1.4}
+    .sub-card-icon{flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px 8px;gap:7px;font-size:11px;font-weight:700}
+    .sub-card-icon .sub-icon{font-size:20px}
+    .sub-card-sm{flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px 6px;gap:5px;font-size:10px}
+    .sub-card-sm .sub-icon{font-size:18px}
+    .sub-icon{font-size:15px}
+    .footer-section{width:100%;margin:0 auto;animation:fadeIn .5s .32s ease both}
+    .footer-note{position:relative;z-index:1;margin-top:24px;font-size:11px;color:var(--text-muted);opacity:.4;animation:fadeIn .5s .4s ease both}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-logo">Kesuma JMB</div>
+    <div class="topbar-right">
+      <div id="themeSwitcher"></div>
+      <div id="langSwitcher"></div>
+    </div>
+  </div>
+  <div class="hero">
+    <div class="badge" id="txt-badge"></div>
+    <h1 id="txt-h1"></h1>
+    <p class="subtitle" id="txt-subtitle"></p>
+
+    <!-- VISITOR SYSTEM -->
+    <div class="sys-block" style="animation-delay:.18s">
+      <div class="sys-label-row">
+        <div class="sys-line"></div>
+        <span class="sys-tag" id="txt-visitor-tag"></span>
+        <div class="sys-line"></div>
+      </div>
+      <div class="sub-links sub-links-2">
+        <a href="visitor-register.html" class="sub-card sub-card-lg">
+          <span class="sub-icon">📝</span>
+          <div><div class="sub-name" id="txt-vis-reg"></div><div class="sub-desc" id="txt-vis-reg-desc"></div></div>
+        </a>
+        <a href="visitor-check.html" class="sub-card sub-card-lg">
+          <span class="sub-icon">🔍</span>
+          <div><div class="sub-name" id="txt-vis-chk"></div><div class="sub-desc" id="txt-vis-chk-desc"></div></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- RESIDENTS -->
+    <div class="sys-block" style="animation-delay:.22s">
+      <div class="sys-label-row">
+        <div class="sys-line"></div>
+        <span class="sys-tag" id="txt-res-tag"></span>
+        <div class="sys-line"></div>
+      </div>
+      <div class="sub-links sub-links-3">
+        <a href="owner.html" class="sub-card sub-card-icon"><span class="sub-icon">🏠</span><span id="txt-owner"></span></a>
+        <a href="guard.html" class="sub-card sub-card-icon"><span class="sub-icon">🛡️</span><span id="txt-guard"></span></a>
+        <a href="admin.html" class="sub-card sub-card-icon"><span class="sub-icon">⚙️</span><span id="txt-admin"></span></a>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="footer-section">
+      <div class="sys-label-row" style="margin-bottom:8px">
+        <div class="sys-line"></div>
+        <span class="sys-tag" id="txt-info-tag"></span>
+        <div class="sys-line"></div>
+      </div>
+      <div class="sub-links sub-links-4">
+        <a href="how.html" class="sub-card sub-card-sm"><span class="sub-icon">📖</span><span id="txt-how"></span></a>
+        <a href="plan.html" class="sub-card sub-card-sm"><span class="sub-icon">🚀</span><span id="txt-plan"></span></a>
+        <a href="about.html" class="sub-card sub-card-sm"><span class="sub-icon">✦</span><span id="txt-about"></span></a>
+        <a href="contact.html" class="sub-card sub-card-sm"><span class="sub-icon">💬</span><span id="txt-contact"></span></a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-note" id="txt-footer"></p>
+  <script src="js/i18n.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+    renderLangSwitcher('langSwitcher')
+    renderThemeSwitcher('themeSwitcher')
+    document.getElementById('txt-badge').textContent=t('index_badge')
+    document.getElementById('txt-h1').innerHTML=t('index_title1')+'<br><span>'+t('index_title2')+'</span>'
+    document.getElementById('txt-subtitle').textContent=t('index_subtitle')
+    document.getElementById('txt-visitor-tag').textContent=t('sys_visitor')
+    document.getElementById('txt-vis-reg').textContent='Daftar Pelawat'
+    document.getElementById('txt-vis-reg-desc').textContent='Visitor daftar sendiri'
+    document.getElementById('txt-vis-chk').textContent=t('vis_check_title')
+    document.getElementById('txt-vis-chk-desc').textContent='Semak status permohonan'
+    document.getElementById('txt-res-tag').textContent=t('sys_resident')
+    document.getElementById('txt-owner').textContent=t('card_owner')
+    document.getElementById('txt-guard').textContent=t('card_guard')
+    document.getElementById('txt-admin').textContent=t('card_admin')
+    document.getElementById('txt-info-tag').textContent=t('info_tag')
+    document.getElementById('txt-how').textContent=t('card_how')
+    document.getElementById('txt-plan').textContent=t('plan_short')
+    document.getElementById('txt-about').textContent=t('card_about')
+    document.getElementById('txt-contact').textContent=t('contact_title')
+    document.getElementById('txt-footer').textContent=t('footer')
+  </script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Pelawat — Kesuma JMB</title>
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .qr-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0 8px}
+    #qrCanvas{display:flex;justify-content:center}
+    #qrCanvas canvas,#qrCanvas img{border-radius:10px;border:3px solid var(--accent);padding:8px;background:#fff}
+    .ref-box{background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),.3);border-radius:10px;padding:14px 18px;text-align:center;margin:14px 0}
+    .ref-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+    .ref-code{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--accent);letter-spacing:4px}
+    .action-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+    .btn-action{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--body-font);transition:all .2s}
+    .btn-action:hover{border-color:rgba(var(--accent-rgb),.4);color:var(--accent)}
+    .btn-copied{border-color:var(--green)!important;color:var(--green)!important}
+    .success-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center}
+    .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+    .info-row:last-child{border-bottom:none}
+    .info-label{color:var(--text-muted)}
+    .info-val{font-weight:600;text-align:right}
+    .pending-note{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--accent);margin-top:14px;line-height:1.6}
+  </style>
+</head>
+<body>
+  <nav class="nav" id="mainNav"></nav>
+  <main class="main">
+    <div id="formView">
+      <div class="page-header animate-in">
+        <div class="page-icon teal">📝</div>
+        <h1 class="page-title">Daftar Pelawat</h1>
+        <p class="page-subtitle" id="txt-subtitle"></p>
+      </div>
+      <!-- UNIT -->
+      <div class="section animate-in" style="animation-delay:.04s">
+        <div class="section-title">UNIT YANG DILAWATI</div>
+        <div class="field">
+          <label>Tingkat</label>
+          <div class="select-wrap"><select id="floorSelect" onchange="onFloorChange()"></select></div>
+        </div>
+        <div class="field" id="unitField" style="display:none">
+          <label>No. Unit</label>
+          <div class="select-wrap"><select id="unitSelect" onchange="onUnitChange()"></select></div>
+        </div>
+        <div id="unitConfirm" style="display:none;padding:10px 14px;background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),.25);border-radius:8px">
+          <span style="font-size:12px;color:var(--text-muted)">Unit dipilih:</span>
+          <span id="unitConfirmVal" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);margin-left:8px"></span>
+        </div>
+        <input type="hidden" id="unit">
+      </div>
+      <!-- VISITOR INFO -->
+      <div class="section animate-in" style="animation-delay:.06s">
+        <div class="section-title" id="txt-sec-info"></div>
+        <div class="field"><label id="txt-name-label"></label><input id="visName" type="text"></div>
+        <div class="field"><label id="txt-ic-label"></label><input id="visIc" type="text"></div>
+        <div class="field"><label id="txt-phone-label"></label><input id="visPhone" type="tel"></div>
+      </div>
+      <!-- VEHICLE -->
+      <div class="section animate-in" style="animation-delay:.08s">
+        <div class="section-title" id="txt-sec-vehicle"></div>
+        <div class="field">
+          <label id="txt-vtype-label"></label>
+          <div class="select-wrap">
+            <select id="visVehicleType" onchange="onVehicleChange()">
+              <option value="" id="opt-vtype-ph"></option>
+              <option value="Kereta" id="opt-car"></option>
+              <option value="Motosikal" id="opt-moto"></option>
+              <option value="Lori / Van" id="opt-lorry"></option>
+              <option value="Tiada" id="opt-none"></option>
+            </select>
+          </div>
+        </div>
+        <div class="field" id="plateField">
+          <label id="txt-plate-label"></label>
+          <input id="visPlate" type="text" style="text-transform:uppercase">
+        </div>
+      </div>
+      <!-- PURPOSE -->
+      <div class="section animate-in" style="animation-delay:.1s">
+        <div class="section-title" id="txt-sec-purpose"></div>
+        <div class="field">
+          <label id="txt-purpose-label"></label>
+          <div class="select-wrap">
+            <select id="visPurpose">
+              <option value="" id="opt-purpose-ph"></option>
+              <option value="Ziarah" id="opt-visit"></option>
+              <option value="Hantar Barang" id="opt-delivery"></option>
+              <option value="Urusan Kerja" id="opt-work"></option>
+              <option value="Pembaikan" id="opt-repair"></option>
+              <option value="Lain-lain" id="opt-other"></option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-gold animate-in" style="animation-delay:.12s" onclick="registerVisitor()" id="txt-submit"></button>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="successView" style="display:none" class="animate-in">
+      <div class="success-card">
+        <div style="font-size:48px;margin-bottom:12px">✅</div>
+        <h2 style="font-family:var(--heading-font);font-size:20px;font-weight:800;margin-bottom:6px" id="txt-success-title"></h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px" id="txt-success-sub"></p>
+        <div class="ref-box">
+          <div class="ref-label" id="txt-ref-label"></div>
+          <div class="ref-code" id="refCode"></div>
+        </div>
+        <div class="action-btns">
+          <button class="btn-action" id="copyBtn" onclick="copyCode()">📋 <span id="txt-copy-btn"></span></button>
+          <button class="btn-action" onclick="downloadQR()">⬇️ <span id="txt-dl-btn"></span></button>
+        </div>
+        <div class="qr-wrap"><div id="qrCanvas"></div><p style="font-size:11px;color:var(--text-muted);margin-top:10px" id="txt-qr-hint"></p></div>
+        <div id="pendingNote" class="pending-note" style="display:none"></div>
+        <div style="margin-top:16px;text-align:left">
+          <div class="section-title" id="txt-details-label"></div>
+          <div id="detailRows"></div>
+        </div>
+        <button class="btn btn-gold" style="margin-top:20px" onclick="resetForm()" id="txt-new-reg"></button>
+      </div>
+    </div>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpers.js"></script>
+  <script>
+    renderNav('card_owner')
+    const urlParams=new URLSearchParams(location.search)
+    const fromOwner=urlParams.get('from')==='owner'
+    const preUnit=urlParams.get('unit')||''
+
+    document.getElementById('txt-subtitle').textContent=fromOwner?'Daftar pelawat untuk unit anda':'Isi maklumat untuk daftar lawatan'
+    document.getElementById('txt-sec-info').textContent=t('vis_sec_info')
+    document.getElementById('txt-name-label').textContent=t('vis_name')
+    document.getElementById('visName').placeholder=t('vis_name_ph')
+    document.getElementById('txt-ic-label').textContent=t('vis_ic')
+    document.getElementById('visIc').placeholder=t('vis_ic_ph')
+    document.getElementById('txt-phone-label').textContent=t('vis_phone')
+    document.getElementById('visPhone').placeholder=t('vis_phone_ph')
+    document.getElementById('txt-sec-vehicle').textContent=t('vis_sec_vehicle')
+    document.getElementById('txt-vtype-label').textContent=t('vis_vehicle_type')
+    document.getElementById('opt-vtype-ph').textContent=t('vis_vehicle_type_ph')
+    document.getElementById('opt-car').textContent=t('vis_vehicle_car')
+    document.getElementById('opt-moto').textContent=t('vis_vehicle_moto')
+    document.getElementById('opt-lorry').textContent=t('vis_vehicle_lorry')
+    document.getElementById('opt-none').textContent=t('vis_vehicle_none')
+    document.getElementById('txt-plate-label').textContent=t('vis_vehicle_plate')
+    document.getElementById('visPlate').placeholder=t('vis_vehicle_plate_ph')
+    document.getElementById('txt-sec-purpose').textContent=t('vis_sec_purpose')
+    document.getElementById('txt-purpose-label').textContent=t('vis_purpose')
+    document.getElementById('opt-purpose-ph').textContent=t('vis_purpose_ph')
+    document.getElementById('opt-visit').textContent=t('vis_purpose_visit')
+    document.getElementById('opt-delivery').textContent=t('vis_purpose_delivery')
+    document.getElementById('opt-work').textContent=t('vis_purpose_work')
+    document.getElementById('opt-repair').textContent=t('vis_purpose_repair')
+    document.getElementById('opt-other').textContent=t('vis_purpose_other')
+    document.getElementById('txt-submit').textContent='✓  '+t('vis_submit')
+
+    // Floor/unit selects
+    const floorSel=document.getElementById('floorSelect')
+    floorSel.innerHTML='<option value="">— Pilih Tingkat —</option>'+FLOORS.map(f=>`<option value="${f}">Tingkat ${f}</option>`).join('')
+
+    function onFloorChange() {
+      const f=floorSel.value
+      const us=document.getElementById('unitSelect')
+      document.getElementById('unit').value=''
+      document.getElementById('unitConfirm').style.display='none'
+      document.getElementById('unitField').style.display=f?'block':'none'
+      if(!f) return
+      us.innerHTML='<option value="">— Pilih Unit —</option>'+UNITS.map(u=>`<option value="${f+'-'+u}">Unit ${u}</option>`).join('')
+    }
+    function onUnitChange() {
+      const v=document.getElementById('unitSelect').value
+      document.getElementById('unit').value=v
+      document.getElementById('unitConfirmVal').textContent=v
+      document.getElementById('unitConfirm').style.display=v?'block':'none'
+    }
+    function onVehicleChange() {
+      const v=document.getElementById('visVehicleType').value
+      document.getElementById('plateField').style.display=v==='Tiada'?'none':'block'
+      if(v==='Tiada') document.getElementById('visPlate').value='TIADA'
+      else if(document.getElementById('visPlate').value==='TIADA') document.getElementById('visPlate').value=''
+    }
+
+    // Pre-fill unit if coming from owner
+    if(preUnit) {
+      const parts=preUnit.split('-')
+      if(parts.length>=2) {
+        floorSel.value=parts[0]
+        onFloorChange()
+        setTimeout(()=>{ document.getElementById('unitSelect').value=preUnit; onUnitChange() },50)
+      }
+    }
+
+    let currentRef=''
+    async function registerVisitor() {
+      const unit=document.getElementById('unit').value
+      const name=document.getElementById('visName').value.trim()
+      const ic_no=document.getElementById('visIc').value.trim()
+      const phone=document.getElementById('visPhone').value.trim()
+      const vehicle_type=document.getElementById('visVehicleType').value
+      const vehicle_plate=document.getElementById('visPlate').value.trim().toUpperCase()
+      const purpose=document.getElementById('visPurpose').value
+
+      if(!unit||!name||!ic_no||!phone||!vehicle_plate||!purpose) { showToast(t('vis_error_fill'),'error-toast'); return }
+
+      const btn=document.getElementById('txt-submit')
+      btn.textContent='⏳ '+t('loading'); btn.disabled=true
+      try {
+        const registered_by=fromOwner?'owner':'visitor'
+        const result=await apiRegisterVisitor({name,ic_no,phone,vehicle_type,vehicle_plate,unit,purpose,registered_by,registered_phone:null})
+        showSuccess(result,{name,ic_no,phone,vehicle_type,vehicle_plate,unit,purpose,registered_by})
+      } catch(e){ showToast(t('error_server'),'error-toast') }
+      finally { btn.textContent='✓  '+t('vis_submit'); btn.disabled=false }
+    }
+
+    function showSuccess(visitor, info) {
+      document.getElementById('formView').style.display='none'
+      document.getElementById('successView').style.display='block'
+      document.getElementById('txt-success-title').textContent=t('vis_success_title')
+      document.getElementById('txt-success-sub').textContent=info.registered_by==='owner'
+        ?'Kongsi QR code atau kod rujukan ini kepada pelawat anda.'
+        :t('vis_success_sub')
+      document.getElementById('txt-ref-label').textContent=t('vis_ref_label')
+      document.getElementById('txt-qr-hint').textContent=t('vis_qr_hint')
+      document.getElementById('txt-details-label').textContent=t('vis_details')
+      document.getElementById('txt-new-reg').textContent=t('vis_new_reg')
+      document.getElementById('txt-copy-btn').textContent=t('vis_copy_code')
+      document.getElementById('txt-dl-btn').textContent=t('vis_download_qr')
+
+      currentRef=visitor.ref_code
+      document.getElementById('refCode').textContent=currentRef
+      const qc=document.getElementById('qrCanvas'); qc.innerHTML=''
+      new QRCode(qc,{text:currentRef,width:180,height:180,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H})
+
+      // Show pending note only for visitor self-register
+      const pn=document.getElementById('pendingNote')
+      if(info.registered_by==='visitor') {
+        pn.style.display='block'
+        pn.textContent='⏳ Pendaftaran anda perlu diluluskan oleh pemilik unit sebelum guard boleh check in. Semak status di halaman "Semak Status".'
+      } else {
+        pn.style.display='none'
+        // Owner registered — auto-approve
+        setTimeout(async()=>{
+          await apiUpdateVisitorStatus(visitor.id,'Approved',{approved_by:'owner-reg'})
+        },500)
+      }
+
+      const rows=[[t('vis_name'),info.name],[t('vis_ic'),info.ic_no],[t('vis_phone'),info.phone],
+        ['Unit',info.unit],[t('vis_purpose'),info.purpose],
+        [t('vis_vehicle_type'),info.vehicle_type||'—'],[t('vis_vehicle_plate'),info.vehicle_plate]]
+      document.getElementById('detailRows').innerHTML=rows.map(([l,v])=>
+        `<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`
+      ).join('')
+    }
+
+    function copyCode() {
+      navigator.clipboard.writeText(currentRef).then(()=>{
+        const btn=document.getElementById('copyBtn')
+        btn.classList.add('btn-copied')
+        btn.innerHTML='✓ <span>'+t('vis_copied')+'</span>'
+        setTimeout(()=>{ btn.classList.remove('btn-copied'); btn.innerHTML='📋 <span>'+t('vis_copy_code')+'</span>' },2000)
+      })
+    }
+    function downloadQR() {
+      const canvas=document.querySelector('#qrCanvas canvas'); if(!canvas) return
+      const a=document.createElement('a'); a.download='visitor-'+currentRef+'.png'; a.href=canvas.toDataURL('image/png'); a.click()
+    }
+    function resetForm() {
+      document.getElementById('successView').style.display='none'
+      document.getElementById('formView').style.display='block'
+      ;['visName','visIc','visPhone','visPlate','unit'].forEach(id=>document.getElementById(id).value='')
+      ;['visVehicleType','visPurpose'].forEach(id=>document.getElementById(id).value='')
+      document.getElementById('floorSelect').value=''; onFloorChange()
+      currentRef=''
+    }
+  </script>
+</body>
+</html>
