@@ -159,8 +159,23 @@
       loadAll()
     }
 
+    function sortUnits(arr) {
+      return arr.slice().sort((a, b) => {
+        // Sort by floor number first, then unit number
+        const [af, au] = a.unit.split('-')
+        const [bf, bu] = b.unit.split('-')
+        const floorDiff = parseInt(af) - parseInt(bf)
+        if (floorDiff !== 0) return floorDiff
+        // Handle 23A specially
+        const auNum = au === '23A' ? 23.5 : parseInt(au)
+        const buNum = bu === '23A' ? 23.5 : parseInt(bu)
+        return auNum - buNum
+      })
+    }
+
     async function loadAll() {
       ;[allVisitors, allOwners] = await Promise.all([apiGetAllVisitors(), apiGetAllOwners()])
+      allOwners = sortUnits(allOwners)
       const today = new Date().toDateString()
       document.getElementById('statUnits').textContent = allOwners.length
       document.getElementById('statToday').textContent = allVisitors.filter(v => new Date(v.created_at).toDateString() === today).length
@@ -208,12 +223,12 @@
     // ── UNITS TAB ──────────────────────────────────────────
     function applyUnitFilter() {
       const s = document.getElementById('unitSearch').value.toLowerCase()
-      filteredOwners = allOwners.filter(o =>
+      filteredOwners = sortUnits(allOwners.filter(o =>
         o.unit.toLowerCase().includes(s) || o.phone.includes(s) ||
         (o.tenant1 && o.tenant1.includes(s)) ||
         (o.tenant2 && o.tenant2.includes(s)) ||
         (o.tenant3 && o.tenant3.includes(s))
-      )
+      ))
       page = 1; renderUnits()
     }
 

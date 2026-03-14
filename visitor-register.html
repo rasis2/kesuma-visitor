@@ -41,7 +41,7 @@
 
       <!-- UNIT -->
       <div class="section animate-in" style="animation-delay:.04s">
-        <div class="section-title">UNIT YANG DILAWATI</div>
+        <div class="section-title" id="txt-unit-section">UNIT YANG DILAWATI</div>
         <div class="field">
           <label>Tingkat</label>
           <div class="select-wrap">
@@ -161,14 +161,14 @@
   <script src="js/api.js"></script>
   <script src="js/helpers.js"></script>
   <script>
-    renderNav('card_owner')
+    renderNav(fromGuard ? 'guard_title' : 'card_owner')
 
     const urlParams  = new URLSearchParams(location.search)
     const fromOwner  = urlParams.get('from') === 'owner'
     const fromGuard  = urlParams.get('from') === 'guard'
     const preUnit    = urlParams.get('unit') || ''
 
-    document.getElementById('txt-subtitle').textContent  = fromOwner ? 'Daftar pelawat untuk unit anda' : fromGuard ? 'Daftar pelawat walk-in' : 'Isi maklumat untuk daftar lawatan'
+    document.getElementById('txt-subtitle').textContent  = fromGuard ? 'Daftar pelawat walk-in' : 'Daftar pelawat untuk unit anda'
     document.getElementById('txt-sec-info').textContent  = t('vis_sec_info')
     document.getElementById('txt-name-label').textContent = t('vis_name')
     document.getElementById('visName').placeholder        = t('vis_name_ph')
@@ -232,12 +232,20 @@
       else if (document.getElementById('visPlate').value === 'TIADA') document.getElementById('visPlate').value = ''
     }
 
-    // Pre-fill unit if from owner/guard
+    // Pre-fill and lock unit if from owner
     if (preUnit) {
       const parts = preUnit.split('-')
       if (parts.length >= 2) {
         floorSel.value = parts[0]; onFloorChange()
-        setTimeout(() => { document.getElementById('unitSelect').value = preUnit; onUnitChange() }, 50)
+        setTimeout(() => {
+          document.getElementById('unitSelect').value = preUnit
+          onUnitChange()
+          // Lock unit selection for owner (they register for their own unit)
+          if (fromOwner) {
+            document.getElementById('floorSelect').disabled = true
+            document.getElementById('unitSelect').disabled  = true
+          }
+        }, 50)
       }
     }
 
@@ -260,7 +268,7 @@
       btn.textContent = '⏳ ' + t('loading'); btn.disabled = true
 
       try {
-        const registered_by = fromOwner ? 'owner' : fromGuard ? 'guard' : 'visitor'
+        const registered_by = fromGuard ? 'guard' : (fromOwner ? 'owner' : 'tenant')
         const result = await apiRegisterVisitor({ name, ic_no, phone, vehicle_type, vehicle_plate, unit, purpose, registered_by, registered_phone: null })
         currentVisitorId = result.id
 

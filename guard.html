@@ -133,8 +133,8 @@
       document.getElementById('txt-stat-in').textContent    = t('checkedin')
       document.getElementById('txt-stat-out').textContent   = t('vis_status_checkout')
       document.getElementById('txt-scan-title').textContent = t('guard_scan_title')
-      document.getElementById('scanInput').placeholder      = t('guard_scan_ph')
-      document.getElementById('txt-scan-btn').textContent   = t('guard_scan_btn')
+      document.getElementById('scanInput').placeholder      = 'KESXXXXXX'
+      document.getElementById('txt-scan-btn').textContent   = 'Semak'
       document.getElementById('txt-reg-btn').textContent    = '+ ' + t('guard_reg_visitor')
       document.getElementById('tab-today').textContent      = t('guard_tab_today')
       document.getElementById('tab-all').textContent        = t('guard_tab_all')
@@ -178,9 +178,9 @@
       }
       el.innerHTML = list.map((v, i) => {
         let actions = ''
-        if      (v.status === 'Approved')                    actions = `<button class="btn-sm btn-checkin" onclick="doAction(${v.id},'Checked In')">${t('guard_checkin')}</button>`
-        else if (v.status === 'Checked In')                  actions = `<button class="btn-sm btn-checkout" onclick="doAction(${v.id},'Checked Out')">${t('guard_checkout')}</button>`
-        else if (v.status === 'Pending' && v.registered_by === 'guard') actions = `<button class="btn-sm btn-approve-ci" onclick="doAction(${v.id},'Approved')">${t('guard_approve_checkin')}</button>`
+        if      (v.status === 'Approved')                              actions = `<button class="btn-sm btn-checkin" onclick="doAction(${v.id},'Checked In')">${t('guard_checkin')}</button>`
+        else if (v.status === 'Checked In')                              actions = `<button class="btn-sm btn-checkout" onclick="doAction(${v.id},'Checked Out')">${t('guard_checkout')}</button>`
+        else if (v.status === 'Pending' && v.registered_by === 'guard') actions = `<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-sm btn-approve-ci" onclick="guardApproveCheckin(${v.id})">${t('guard_approve_checkin')}</button><button class="btn-sm btn-checkout" onclick="doAction(${v.id},'Rejected')" style="background:rgba(224,92,92,.15);color:var(--red);border:1px solid rgba(224,92,92,.3)">${t('vis_status_rejected')}</button></div>`
 
         return `<div class="vis-card animate-in ${v.status==='Checked In'?'in':v.status==='Checked Out'?'out':''}" style="animation-delay:${i*0.04}s">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
@@ -195,7 +195,15 @@
 
     async function doAction(id, status) {
       await apiUpdateVisitorStatus(id, status)
-      showToast(status === 'Checked In' ? t('guard_checkin_ok') : t('guard_checkout_ok'), 'success')
+      showToast(status === 'Checked In' ? t('guard_checkin_ok') : status === 'Checked Out' ? t('guard_checkout_ok') : t('guard_updated'), 'success')
+      loadVisitors()
+    }
+
+    async function guardApproveCheckin(id) {
+      // Guard registered visitor: approve first, then immediately check in
+      await apiUpdateVisitorStatus(id, 'Approved')
+      await apiUpdateVisitorStatus(id, 'Checked In')
+      showToast(t('guard_checkin_ok'), 'success')
       loadVisitors()
     }
 
@@ -221,7 +229,7 @@
       else if (v.status === 'Checked In')                               actionHtml = `<button class="btn-sm btn-checkout" onclick="quickAction(${v.id},'Checked Out')">${t('guard_checkout')}</button>`
       else if (expired)                                                  actionHtml = `<div class="status-msg err">${t('guard_expired')}</div>`
       else if (v.status === 'Approved')                                 actionHtml = `<button class="btn-sm btn-checkin" onclick="quickAction(${v.id},'Checked In')">${t('guard_checkin')}</button>`
-      else if (v.status === 'Pending' && v.registered_by === 'guard')   actionHtml = `<button class="btn-sm btn-approve-ci" onclick="quickAction(${v.id},'Approved')">${t('guard_approve_checkin')}</button>`
+      else if (v.status === 'Pending' && v.registered_by === 'guard')   actionHtml = `<button class="btn-sm btn-approve-ci" onclick="guardQuickApproveCheckin(${v.id})">${t('guard_approve_checkin')}</button>`
       else if (v.status === 'Rejected')                                 actionHtml = `<div class="status-msg err">${t('vis_status_rejected')}</div>`
       else {
         // Pending - visitor self-registered, show contacts for owner to approve
@@ -271,6 +279,15 @@
     async function quickAction(id, status) {
       await apiUpdateVisitorStatus(id, status)
       showToast(status === 'Checked In' ? t('guard_checkin_ok') : t('guard_checkout_ok'), 'success')
+      document.getElementById('scanInput').value = ''
+      document.getElementById('scanResult').innerHTML = ''
+      loadVisitors()
+    }
+
+    async function guardQuickApproveCheckin(id) {
+      await apiUpdateVisitorStatus(id, 'Approved')
+      await apiUpdateVisitorStatus(id, 'Checked In')
+      showToast(t('guard_checkin_ok'), 'success')
       document.getElementById('scanInput').value = ''
       document.getElementById('scanResult').innerHTML = ''
       loadVisitors()

@@ -117,7 +117,7 @@
 
     // ── TEXTS ──────────────────────────────────────────────
     document.getElementById('txt-title').textContent         = t('owner_title')
-    document.getElementById('txt-subtitle').textContent      = t('owner_subtitle')
+    document.getElementById('txt-subtitle').textContent      = 'Masukkan no. telefon untuk sahkan identiti anda'
     document.getElementById('txt-section').textContent       = t('owner_section')
     document.getElementById('txt-phone-label').textContent   = t('owner_phone_label')
     document.getElementById('loginPhone').placeholder        = t('owner_phone_ph')
@@ -157,6 +157,7 @@
     }
 
     function goRegister() {
+      // Pass unit so visitor-register can pre-fill it
       location.href = 'visitor-register.html?from=owner&unit=' + encodeURIComponent(currentUnit)
     }
 
