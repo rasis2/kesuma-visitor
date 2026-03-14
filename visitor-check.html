@@ -5,17 +5,19 @@
   <title>Semak Status — Kesuma JMB</title>
   <link rel="manifest" href="site.webmanifest">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="css/style.css">
   <style>
     .info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
     .info-row:last-child{border-bottom:none}
     .info-label{color:var(--text-muted)}
     .info-val{font-weight:600;text-align:right;max-width:60%}
-    .timeline{margin-top:12px}
-    .tl-row{display:flex;gap:10px;padding:7px 0;font-size:12px;color:var(--text-muted)}
-    .tl-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;margin-top:4px}
-    .tl-dot.done{background:var(--green)}
-    .tl-dot.active{background:var(--accent)}
+    .tl-row{display:flex;gap:12px;padding:8px 0;font-size:13px}
+    .tl-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:4px;transition:all .2s}
+    .tl-dot.done{background:var(--green);border-color:var(--green)}
+    .tl-dot.active{background:var(--accent);border-color:var(--accent)}
+    .tl-label{font-weight:600;color:var(--text)}
+    .tl-time{font-size:11px;color:var(--text-muted);margin-top:2px;font-family:'JetBrains Mono',monospace}
   </style>
 </head>
 <body>
@@ -31,13 +33,14 @@
       <div class="field">
         <label id="txt-label"></label>
         <input id="refInput" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')checkStatus()">
+        <div class="error-text" id="checkError" style="margin-top:4px"></div>
       </div>
-      <div class="error-text" id="checkError"></div>
     </div>
-    <button class="btn btn-gold animate-in" onclick="checkStatus()" id="txt-btn"></button>
+    <button class="btn btn-gold animate-in" onclick="checkStatus()" id="txt-btn" style="animation-delay:.08s"></button>
     <div id="result" style="margin-top:16px"></div>
   </main>
   <div class="toast" id="toast"></div>
+
   <script src="js/i18n.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/nav.js"></script>
@@ -45,34 +48,35 @@
   <script src="js/helpers.js"></script>
   <script>
     renderNav('vis_check_title')
-    document.getElementById('txt-title').textContent=t('vis_check_title')
-    document.getElementById('txt-subtitle').textContent=t('vis_check_subtitle')
-    document.getElementById('txt-section').textContent=t('vis_check_section')
-    document.getElementById('txt-label').textContent=t('vis_check_label')
-    document.getElementById('refInput').placeholder=t('vis_check_ph')
-    document.getElementById('txt-btn').textContent='🔍  '+t('vis_check_btn')
+    document.getElementById('txt-title').textContent   = t('vis_check_title')
+    document.getElementById('txt-subtitle').textContent = t('vis_check_subtitle')
+    document.getElementById('txt-section').textContent = t('vis_check_section')
+    document.getElementById('txt-label').textContent   = t('vis_check_label')
+    document.getElementById('refInput').placeholder    = t('vis_check_ph')
+    document.getElementById('txt-btn').textContent     = '🔍  ' + t('vis_check_btn')
 
     async function checkStatus() {
-      const code=document.getElementById('refInput').value.trim().toUpperCase()
-      const err=document.getElementById('checkError')
-      if(!code){err.textContent=t('vis_error_fill');return}
-      err.textContent=''
+      const code = document.getElementById('refInput').value.trim().toUpperCase()
+      const err  = document.getElementById('checkError')
+      if (!code) { err.textContent = t('vis_error_fill'); return }
+      err.textContent = ''
       try {
-        const v=await apiGetVisitorByRef(code)
-        if(!v){err.textContent=t('vis_check_not_found');document.getElementById('result').innerHTML='';return}
+        const v = await apiGetVisitorByRef(code)
+        if (!v) { err.textContent = t('vis_check_not_found'); document.getElementById('result').innerHTML = ''; return }
         renderResult(v)
-      } catch(e){err.textContent=t('error_server')}
+      } catch(e) { err.textContent = t('error_server') }
     }
 
     function renderResult(v) {
-      const expired=isExpired(v)
-      const steps=[
-        {label:'Berdaftar', ts:v.created_at, done:true, active:v.status==='Pending'},
-        {label:'Diluluskan', ts:v.approved_at, done:!!v.approved_at, active:v.status==='Approved'},
-        {label:'Masuk', ts:v.checked_in_at, done:!!v.checked_in_at, active:v.status==='Checked In'},
-        {label:'Keluar', ts:v.checked_out_at, done:!!v.checked_out_at, active:v.status==='Checked Out'},
+      const expired = isExpired(v)
+      const steps = [
+        { label: 'Berdaftar',   ts: v.created_at,     done: true,            active: v.status === 'Pending' },
+        { label: 'Diluluskan',  ts: v.approved_at,    done: !!v.approved_at, active: v.status === 'Approved' },
+        { label: 'Telah Masuk', ts: v.checked_in_at,  done: !!v.checked_in_at,  active: v.status === 'Checked In' },
+        { label: 'Telah Keluar',ts: v.checked_out_at, done: !!v.checked_out_at, active: v.status === 'Checked Out' },
       ]
-      document.getElementById('result').innerHTML=`
+
+      document.getElementById('result').innerHTML = `
         <div class="section animate-in">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
             <div>
@@ -83,10 +87,18 @@
           </div>
           <div class="info-row"><span class="info-label">Unit</span><span class="info-val">${v.unit}</span></div>
           <div class="info-row"><span class="info-label">${t('vis_purpose')}</span><span class="info-val">${v.purpose}</span></div>
-          <div class="info-row"><span class="info-label">${t('vis_vehicle_plate')}</span><span class="info-val">${v.vehicle_plate||'—'}</span></div>
-          ${expired&&v.status==='Approved'?`<div style="margin-top:8px;padding:8px 12px;background:rgba(224,92,92,.1);border-radius:7px;font-size:12px;color:var(--red)">${t('guard_expired')}</div>`:''}
-          <div class="timeline">
-            ${steps.map(s=>`<div class="tl-row"><div class="tl-dot${s.done?' done':s.active?' active':''}"></div><div><strong style="color:var(--text)">${s.label}</strong> ${s.ts?'· '+fmtDate(s.ts):''}</div></div>`).join('')}
+          <div class="info-row"><span class="info-label">${t('vis_vehicle_plate')}</span><span class="info-val">${v.vehicle_plate || '—'}</span></div>
+          ${expired && v.status === 'Approved' ? `<div style="margin-top:8px;padding:8px 12px;background:rgba(224,92,92,.1);border-radius:7px;font-size:12px;color:var(--red)">⚠️ ${t('guard_expired')}</div>` : ''}
+          <div style="margin-top:14px">
+            <div class="section-title" style="margin-bottom:10px">TIMELINE</div>
+            ${steps.map(s => `
+              <div class="tl-row">
+                <div class="tl-dot${s.done ? ' done' : s.active ? ' active' : ''}"></div>
+                <div>
+                  <div class="tl-label">${s.label}</div>
+                  ${s.ts ? `<div class="tl-time">${fmtDateFull(s.ts)}</div>` : ''}
+                </div>
+              </div>`).join('')}
           </div>
         </div>`
     }

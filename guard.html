@@ -5,28 +5,37 @@
   <title>Security — Kesuma JMB</title>
   <link rel="manifest" href="site.webmanifest">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .scan-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+    .tab-bar{display:flex;gap:6px;margin-bottom:14px;background:var(--surface2);border-radius:10px;padding:4px}
+    .tab{flex:1;text-align:center;padding:8px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text-muted);font-family:var(--heading-font)}
+    .tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.15)}
     .vis-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:border-color .2s}
+    .vis-card:hover{border-color:var(--border2)}
     .vis-card.in{border-left:3px solid var(--green)}
-    .vis-card.out{border-left:3px solid var(--text-muted)}
+    .vis-card.out{border-left:3px solid var(--text-muted);opacity:.7}
     .vis-name{font-family:var(--heading-font);font-size:14px;font-weight:700;margin-bottom:2px}
     .vis-meta{font-size:11px;color:var(--text-muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
     .btn-sm{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--body-font);transition:all .2s}
     .btn-checkin{background:rgba(99,179,237,.18);color:#63b3ed;border:1px solid rgba(99,179,237,.3)}
-    .btn-checkout{background:var(--surface3);color:var(--text-muted);border:1px solid var(--border2)}
+    .btn-checkin:hover{background:rgba(99,179,237,.28)}
+    .btn-checkout{background:var(--surface3,var(--surface));color:var(--text-muted);border:1px solid var(--border2,var(--border))}
+    .btn-checkout:hover{background:var(--surface)}
     .btn-approve-ci{background:var(--green);color:#fff}
-    .tab-bar{display:flex;gap:6px;margin-bottom:14px;background:var(--surface2);border-radius:10px;padding:4px}
-    .tab{flex:1;text-align:center;padding:8px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text-muted)}
-    .tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.15)}
-    .contact-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
-    .contact-row:last-child{border-bottom:none}
+    .btn-approve-ci:hover{opacity:.85}
+    .scan-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px}
     .result-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px}
-    .result-name{font-family:var(--heading-font);font-size:18px;font-weight:800;margin-bottom:4px}
-    .result-meta{font-size:12px;color:var(--text-muted);margin-bottom:12px}
     .info-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
     .info-row:last-child{border-bottom:none}
+    .info-label{color:var(--text-muted)}
+    .status-msg{padding:8px 12px;border-radius:7px;font-size:12px;font-weight:600;text-align:center}
+    .status-msg.warn{background:rgba(201,168,76,.1);color:var(--accent)}
+    .status-msg.err{background:rgba(224,92,92,.1);color:var(--red)}
+    .status-msg.ok{background:var(--green-dim,rgba(76,175,125,.1));color:var(--green)}
+    .contact-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:12px}
+    .contact-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+    .contact-row:last-child{border-bottom:none}
   </style>
 </head>
 <body>
@@ -39,7 +48,10 @@
         <div class="page-icon" style="background:rgba(159,122,234,.12);border:1px solid rgba(159,122,234,.2);margin-bottom:16px">🛡️</div>
         <h2 style="font-family:var(--heading-font);font-size:20px;font-weight:800;margin-bottom:4px" id="txt-pin-title"></h2>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px" id="txt-pin-sub"></p>
-        <div class="field"><input type="password" id="guardPin" maxlength="10" onkeydown="if(event.key==='Enter')unlockGuard()" placeholder="••••"><div class="error-text" id="pinError"></div></div>
+        <div class="field">
+          <input type="password" id="guardPin" maxlength="10" onkeydown="if(event.key==='Enter')unlockGuard()" placeholder="••••">
+          <div class="error-text" id="pinError"></div>
+        </div>
         <button class="btn btn-gold" onclick="unlockGuard()" id="txt-enter-btn"></button>
       </div>
     </div>
@@ -54,25 +66,43 @@
         <p class="page-subtitle" id="txt-subtitle"></p>
       </div>
 
+      <!-- STATS -->
+      <div class="section animate-in" style="display:flex;gap:0;padding:0;overflow:hidden;margin-bottom:14px;animation-delay:.05s">
+        <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+          <div id="statToday" class="num" style="font-size:22px;color:var(--accent)">—</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px" id="txt-stat-today"></div>
+        </div>
+        <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+          <div id="statIn" class="num" style="font-size:22px;color:var(--green)">—</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px" id="txt-stat-in"></div>
+        </div>
+        <div style="flex:1;padding:14px;text-align:center">
+          <div id="statOut" class="num" style="font-size:22px;color:var(--text-muted)">—</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px" id="txt-stat-out"></div>
+        </div>
+      </div>
+
       <!-- SCAN BOX -->
-      <div class="scan-box animate-in">
+      <div class="scan-box animate-in" style="animation-delay:.08s">
         <div class="section-title" id="txt-scan-title"></div>
         <div style="display:flex;gap:8px">
-          <input id="scanInput" style="flex:1;text-transform:uppercase" onkeydown="if(event.key==='Enter')doScan()" id="txt-scan-input">
+          <input id="scanInput" style="flex:1;text-transform:uppercase" onkeydown="if(event.key==='Enter')doScan()">
           <button class="btn btn-gold" onclick="doScan()" style="flex-shrink:0;padding:0 16px" id="txt-scan-btn"></button>
         </div>
-        <div id="scanResult" style="margin-top:0"></div>
+        <div id="scanResult"></div>
       </div>
 
       <!-- REGISTER WALKIN -->
-      <button class="btn btn-outline animate-in" onclick="location.href='visitor-register.html?from=guard'" id="txt-reg-btn" style="margin-bottom:14px"></button>
+      <button class="btn btn-outline animate-in" onclick="location.href='visitor-register.html?from=guard'" id="txt-reg-btn" style="margin-bottom:14px;animation-delay:.1s"></button>
 
-      <!-- VISITOR LIST -->
-      <div class="tab-bar animate-in">
+      <!-- LIST -->
+      <div class="tab-bar animate-in" style="animation-delay:.12s">
         <div class="tab active" onclick="switchTab('today')" id="tab-today"></div>
         <div class="tab" onclick="switchTab('all')" id="tab-all"></div>
       </div>
-      <div style="margin-bottom:10px"><input id="searchInput" oninput="applyFilter()" style="height:40px"></div>
+      <div style="margin-bottom:10px">
+        <input id="searchInput" oninput="applyFilter()" style="height:40px" placeholder="Cari nama, unit, kod...">
+      </div>
       <div id="visList"></div>
     </main>
   </div>
@@ -85,117 +115,164 @@
   <script src="js/helpers.js"></script>
   <script>
     renderNav('guard_title')
-    document.getElementById('txt-pin-title').textContent=t('guard_title')
-    document.getElementById('txt-pin-sub').textContent=t('guard_pin_sub')
-    document.getElementById('txt-enter-btn').textContent=t('enter')
-    document.getElementById('txt-title').textContent=t('guard_title')
-    document.getElementById('txt-subtitle').textContent=t('guard_subtitle')
-    document.getElementById('txt-scan-title').textContent=t('guard_scan_title')
-    document.getElementById('scanInput').placeholder=t('guard_scan_ph')
-    document.getElementById('txt-scan-btn').textContent=t('guard_scan_btn')
-    document.getElementById('txt-reg-btn').textContent='+ '+t('guard_reg_visitor')
-    document.getElementById('tab-today').textContent=t('guard_tab_today')
-    document.getElementById('tab-all').textContent=t('guard_tab_all')
-    document.getElementById('searchInput').placeholder='Cari nama, unit atau kod...'
+    document.getElementById('txt-pin-title').textContent = t('guard_title')
+    document.getElementById('txt-pin-sub').textContent   = t('guard_pin_sub')
+    document.getElementById('txt-enter-btn').textContent = t('enter')
 
-    let allVisitors=[], currentTab='today'
+    let allVisitors = [], currentTab = 'today'
 
     function unlockGuard() {
-      if(document.getElementById('guardPin').value!=='1125') { document.getElementById('pinError').textContent=t('admin_pin_error'); return }
-      document.getElementById('pinGate').style.display='none'
-      document.getElementById('dashboard').style.display='block'
+      if (document.getElementById('guardPin').value !== '1125') {
+        document.getElementById('pinError').textContent = t('admin_pin_error'); return
+      }
+      document.getElementById('pinGate').style.display    = 'none'
+      document.getElementById('dashboard').style.display  = 'block'
+      document.getElementById('txt-title').textContent    = t('guard_title')
+      document.getElementById('txt-subtitle').textContent = t('guard_subtitle')
+      document.getElementById('txt-stat-today').textContent = t('today')
+      document.getElementById('txt-stat-in').textContent    = t('checkedin')
+      document.getElementById('txt-stat-out').textContent   = t('vis_status_checkout')
+      document.getElementById('txt-scan-title').textContent = t('guard_scan_title')
+      document.getElementById('scanInput').placeholder      = t('guard_scan_ph')
+      document.getElementById('txt-scan-btn').textContent   = t('guard_scan_btn')
+      document.getElementById('txt-reg-btn').textContent    = '+ ' + t('guard_reg_visitor')
+      document.getElementById('tab-today').textContent      = t('guard_tab_today')
+      document.getElementById('tab-all').textContent        = t('guard_tab_all')
       loadVisitors()
     }
 
     async function loadVisitors() {
-      allVisitors=await apiGetAllVisitors()
+      allVisitors = await apiGetAllVisitors()
+      const today = new Date().toDateString()
+      const todayList = allVisitors.filter(v => new Date(v.created_at).toDateString() === today)
+      document.getElementById('statToday').textContent = todayList.length
+      document.getElementById('statIn').textContent    = allVisitors.filter(v => v.status === 'Checked In').length
+      document.getElementById('statOut').textContent   = allVisitors.filter(v => v.status === 'Checked Out').length
       applyFilter()
     }
 
     function switchTab(tab) {
-      currentTab=tab
-      document.getElementById('tab-today').classList.toggle('active',tab==='today')
-      document.getElementById('tab-all').classList.toggle('active',tab==='all')
+      currentTab = tab
+      document.getElementById('tab-today').classList.toggle('active', tab === 'today')
+      document.getElementById('tab-all').classList.toggle('active',   tab === 'all')
       applyFilter()
     }
 
     function applyFilter() {
-      const search=document.getElementById('searchInput').value.toUpperCase()
-      const today=new Date().toDateString()
-      let list=allVisitors
-      if(currentTab==='today') list=list.filter(v=>new Date(v.created_at).toDateString()===today)
-      if(search) list=list.filter(v=>v.ref_code.includes(search)||v.name.toUpperCase().includes(search)||v.unit.includes(search))
+      const search = document.getElementById('searchInput').value.toUpperCase()
+      const today  = new Date().toDateString()
+      let list = currentTab === 'today'
+        ? allVisitors.filter(v => new Date(v.created_at).toDateString() === today)
+        : allVisitors
+      if (search) list = list.filter(v =>
+        v.ref_code.includes(search) || v.name.toUpperCase().includes(search) || v.unit.includes(search)
+      )
       renderList(list)
     }
 
     function renderList(list) {
-      const el=document.getElementById('visList')
-      if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">🛡️</div><p>Tiada rekod.</p></div>';return}
-      el.innerHTML=list.map(v=>`
-        <div class="vis-card animate-in ${v.status==='Checked In'?'in':v.status==='Checked Out'?'out':''}">
+      const el = document.getElementById('visList')
+      if (!list.length) {
+        el.innerHTML = '<div class="empty animate-in"><div class="empty-icon">🛡️</div><p>Tiada rekod.</p></div>'
+        return
+      }
+      el.innerHTML = list.map((v, i) => {
+        let actions = ''
+        if      (v.status === 'Approved')                    actions = `<button class="btn-sm btn-checkin" onclick="doAction(${v.id},'Checked In')">${t('guard_checkin')}</button>`
+        else if (v.status === 'Checked In')                  actions = `<button class="btn-sm btn-checkout" onclick="doAction(${v.id},'Checked Out')">${t('guard_checkout')}</button>`
+        else if (v.status === 'Pending' && v.registered_by === 'guard') actions = `<button class="btn-sm btn-approve-ci" onclick="doAction(${v.id},'Approved')">${t('guard_approve_checkin')}</button>`
+
+        return `<div class="vis-card animate-in ${v.status==='Checked In'?'in':v.status==='Checked Out'?'out':''}" style="animation-delay:${i*0.04}s">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
             <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
           </div>
           <div class="vis-meta">${v.ref_code} · Unit ${v.unit} · ${fmtDate(v.created_at)}</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">${v.purpose} · ${v.vehicle_plate||'—'}</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            ${v.status==='Approved'?`<button class="btn-sm btn-checkin" onclick="doAction(${v.id},'Checked In')">${t('guard_checkin')}</button>`:''}
-            ${v.status==='Checked In'?`<button class="btn-sm btn-checkout" onclick="doAction(${v.id},'Checked Out')">${t('guard_checkout')}</button>`:''}
-            ${v.status==='Pending'&&v.registered_by==='guard'?`<button class="btn-sm btn-approve-ci" onclick="doAction(${v.id},'Approved')">${t('guard_approve_checkin')}</button>`:''}
-          </div>
-        </div>`).join('')
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">${v.purpose} · ${v.vehicle_plate || '—'}</div>
+          ${actions ? `<div style="display:flex;gap:8px">${actions}</div>` : ''}
+        </div>`
+      }).join('')
     }
 
     async function doAction(id, status) {
       await apiUpdateVisitorStatus(id, status)
-      showToast(status==='Checked In'?t('guard_checkin_ok'):t('guard_checkout_ok'),'success')
+      showToast(status === 'Checked In' ? t('guard_checkin_ok') : t('guard_checkout_ok'), 'success')
       loadVisitors()
     }
 
-    // SCAN function
+    // ── SCAN ───────────────────────────────────────────────
     async function doScan() {
-      const code=document.getElementById('scanInput').value.trim().toUpperCase()
-      if(!code) return
-      const el=document.getElementById('scanResult')
-      el.innerHTML='<p style="font-size:13px;color:var(--text-muted);padding:12px 0">'+t('loading')+'</p>'
+      const code = document.getElementById('scanInput').value.trim().toUpperCase()
+      if (!code) return
+      const el = document.getElementById('scanResult')
+      el.innerHTML = '<p style="font-size:13px;color:var(--text-muted);padding:12px 0">' + t('loading') + '</p>'
       try {
-        const v=await apiGetVisitorByRef(code)
-        if(!v){el.innerHTML='<p style="font-size:13px;color:var(--red);padding:12px 0">'+t('vis_check_not_found')+'</p>';return}
+        const v = await apiGetVisitorByRef(code)
+        if (!v) { el.innerHTML = '<p style="font-size:13px;color:var(--red);padding:12px 0">' + t('vis_check_not_found') + '</p>'; return }
         renderScanResult(v)
-      } catch(e){ el.innerHTML='<p style="font-size:13px;color:var(--red);padding:12px 0">'+t('error_server')+'</p>' }
+      } catch(e) {
+        el.innerHTML = '<p style="font-size:13px;color:var(--red);padding:12px 0">' + t('error_server') + '</p>'
+      }
     }
 
-    function renderScanResult(v) {
-      const expired=isExpired(v)
-      let actionHtml=''
-      if(v.status==='Checked Out') actionHtml=`<div style="padding:8px 10px;background:var(--surface2);border-radius:7px;font-size:12px;color:var(--text-muted)">${t('guard_already_out')}</div>`
-      else if(v.status==='Checked In') actionHtml=`<div style="display:flex;gap:8px"><button class="btn-sm btn-checkout" onclick="quickAction(${v.id},'Checked Out')">${t('guard_checkout')}</button></div>`
-      else if(expired) actionHtml=`<div style="padding:8px 10px;background:var(--surface2);border-radius:7px;font-size:12px;color:var(--red)">${t('guard_expired')}</div>`
-      else if(v.status==='Approved') actionHtml=`<div style="display:flex;gap:8px"><button class="btn-sm btn-checkin" onclick="quickAction(${v.id},'Checked In')">${t('guard_checkin')}</button></div>`
-      else if(v.status==='Pending'&&v.registered_by==='guard') actionHtml=`<div style="display:flex;gap:8px"><button class="btn-sm btn-approve-ci" onclick="quickAction(${v.id},'Approved')">${t('guard_approve_checkin')}</button></div>`
-      else actionHtml=`<div style="padding:8px 10px;background:var(--surface2);border-radius:7px;font-size:12px;color:var(--accent)">${t('guard_not_approved')}</div>`
+    async function renderScanResult(v) {
+      const expired = isExpired(v)
+      let actionHtml = ''
+      if      (v.status === 'Checked Out')                              actionHtml = `<div class="status-msg ok">${t('guard_already_out')}</div>`
+      else if (v.status === 'Checked In')                               actionHtml = `<button class="btn-sm btn-checkout" onclick="quickAction(${v.id},'Checked Out')">${t('guard_checkout')}</button>`
+      else if (expired)                                                  actionHtml = `<div class="status-msg err">${t('guard_expired')}</div>`
+      else if (v.status === 'Approved')                                 actionHtml = `<button class="btn-sm btn-checkin" onclick="quickAction(${v.id},'Checked In')">${t('guard_checkin')}</button>`
+      else if (v.status === 'Pending' && v.registered_by === 'guard')   actionHtml = `<button class="btn-sm btn-approve-ci" onclick="quickAction(${v.id},'Approved')">${t('guard_approve_checkin')}</button>`
+      else if (v.status === 'Rejected')                                 actionHtml = `<div class="status-msg err">${t('vis_status_rejected')}</div>`
+      else {
+        // Pending - visitor self-registered, show contacts for owner to approve
+        actionHtml = `<div class="status-msg warn">${t('guard_not_approved')}</div>`
+      }
 
-      document.getElementById('scanResult').innerHTML=`
-        <div class="result-card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div class="result-name">${v.name}</div>${statusBadge(v.status)}
+      // Fetch unit contacts if pending or guard-registered
+      let contactHtml = ''
+      if (v.status === 'Pending' || v.registered_by === 'guard') {
+        try {
+          const owner = await apiGetOwner(v.unit)
+          if (owner) {
+            const contacts = [
+              ['Owner', owner.phone],
+              owner.tenant1 ? ['Tenant 1', owner.tenant1] : null,
+              owner.tenant2 ? ['Tenant 2', owner.tenant2] : null,
+              owner.tenant3 ? ['Tenant 3', owner.tenant3] : null,
+            ].filter(Boolean)
+            contactHtml = `<div class="contact-block">
+              <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px">${t('guard_contacts')}</div>
+              ${contacts.map(([role, phone]) => `
+                <div class="contact-row">
+                  <span style="color:var(--text-muted)">${role}</span>
+                  <a href="tel:${phone}" style="font-family:'JetBrains Mono',monospace;color:var(--accent);text-decoration:none;font-weight:600">${phone}</a>
+                </div>`).join('')}
+            </div>`
+          }
+        } catch(e) {}
+      }
+
+      document.getElementById('scanResult').innerHTML = `
+        <div class="result-card animate-in">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+            <div style="font-family:var(--heading-font);font-size:18px;font-weight:800">${v.name}</div>
+            ${statusBadge(v.status)}
           </div>
-          <div class="result-meta">${v.ref_code} · Unit ${v.unit}</div>
-          <div style="margin-bottom:12px">
-            <div class="info-row"><span style="color:var(--text-muted)">Tujuan</span><span>${v.purpose}</span></div>
-            <div class="info-row"><span style="color:var(--text-muted)">Kenderaan</span><span>${v.vehicle_plate||'—'}</span></div>
-            <div class="info-row"><span style="color:var(--text-muted)">Daftar</span><span>${fmtDate(v.created_at)}</span></div>
-            ${v.checked_in_at?`<div class="info-row"><span style="color:var(--text-muted)">Masuk</span><span>${fmtDate(v.checked_in_at)}</span></div>`:''}
-          </div>
-          ${actionHtml}
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:12px">${v.ref_code} · Unit ${v.unit}</div>
+          <div class="info-row"><span class="info-label">Tujuan</span><span>${v.purpose}</span></div>
+          <div class="info-row"><span class="info-label">Kenderaan</span><span>${v.vehicle_plate || '—'}</span></div>
+          <div class="info-row"><span class="info-label">Daftar</span><span>${fmtDate(v.created_at)}</span></div>
+          ${v.checked_in_at ? `<div class="info-row"><span class="info-label">Masuk</span><span>${fmtDate(v.checked_in_at)}</span></div>` : ''}
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${actionHtml}</div>
+          ${contactHtml}
         </div>`
     }
 
     async function quickAction(id, status) {
       await apiUpdateVisitorStatus(id, status)
-      showToast(status==='Checked In'?t('guard_checkin_ok'):t('guard_checkout_ok'),'success')
-      document.getElementById('scanInput').value=''
-      document.getElementById('scanResult').innerHTML=''
+      showToast(status === 'Checked In' ? t('guard_checkin_ok') : t('guard_checkout_ok'), 'success')
+      document.getElementById('scanInput').value = ''
+      document.getElementById('scanResult').innerHTML = ''
       loadVisitors()
     }
   </script>

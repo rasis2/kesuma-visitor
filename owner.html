@@ -2,34 +2,34 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Owner — Kesuma JMB</title>
+  <title>Pemilik — Kesuma JMB</title>
   <link rel="manifest" href="site.webmanifest">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="css/style.css">
   <style>
     .tab-bar{display:flex;gap:6px;margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:4px}
-    .tab{flex:1;text-align:center;padding:8px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text-muted)}
+    .tab{flex:1;text-align:center;padding:8px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text-muted);font-family:var(--heading-font)}
     .tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.15)}
-    .vis-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+    .vis-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:border-color .2s}
+    .vis-card:hover{border-color:var(--border2)}
     .vis-name{font-family:var(--heading-font);font-size:14px;font-weight:700;margin-bottom:2px}
     .vis-meta{font-size:11px;color:var(--text-muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
     .btn-sm{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--body-font);transition:all .2s}
     .btn-approve{background:var(--green);color:#fff}.btn-approve:hover{opacity:.85}
     .btn-reject{background:var(--red);color:#fff}.btn-reject:hover{opacity:.85}
-    .role-badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.5px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(var(--accent-rgb),.25)}
-    .role-badge.tenant{background:rgba(76,175,125,.1);color:var(--green);border-color:rgba(76,175,125,.25)}
-    .settings-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:12px}
-    .settings-row .field{flex:1;margin-bottom:0}
+    .log-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
+    .log-row:last-child{border-bottom:none}
     .phone-item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
     .phone-item input{flex:1}
-    .phone-item .btn-sm{flex-shrink:0}
+    .owner-info-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--text-muted)}
   </style>
 </head>
 <body>
   <nav class="nav" id="mainNav"></nav>
   <main class="main">
 
-    <!-- LOGIN -->
+    <!-- LOGIN VIEW -->
     <div id="loginView">
       <div class="page-header animate-in">
         <div class="page-icon teal">🏠</div>
@@ -41,18 +41,18 @@
         <div class="field">
           <label id="txt-phone-label"></label>
           <input id="loginPhone" type="tel" onkeydown="if(event.key==='Enter')doLogin()">
-          <div class="error-text" id="loginError"></div>
+          <div class="error-text" id="loginError" style="margin-top:4px"></div>
         </div>
       </div>
-      <button class="btn btn-gold animate-in" onclick="doLogin()" id="txt-login-btn"></button>
+      <button class="btn btn-gold animate-in" onclick="doLogin()" id="txt-login-btn" style="animation-delay:.08s"></button>
     </div>
 
-    <!-- DASHBOARD -->
+    <!-- DASHBOARD VIEW -->
     <div id="dashView" style="display:none">
       <div class="page-header animate-in">
         <div class="page-icon teal">🏠</div>
         <h1 class="page-title" id="txt-welcome"></h1>
-        <p class="page-subtitle" id="txt-unit-info"></p>
+        <p class="page-subtitle" id="txt-unit-label"></p>
       </div>
       <div class="tab-bar animate-in">
         <div class="tab active" onclick="switchTab('visitors')" id="tab-visitors"></div>
@@ -61,43 +61,51 @@
         <div class="tab" onclick="switchTab('settings')" id="tab-settings"></div>
       </div>
 
-      <!-- VISITORS TAB -->
+      <!-- TAB: VISITORS -->
       <div id="tabVisitors">
-        <button class="btn btn-gold" onclick="location.href='visitor-register.html?from=owner&unit='+currentUnit" id="txt-reg-btn" style="margin-bottom:14px"></button>
+        <button class="btn btn-gold" style="margin-bottom:14px" onclick="goRegister()" id="txt-reg-btn"></button>
         <div id="visitorsList"></div>
       </div>
 
-      <!-- PENDING TAB -->
+      <!-- TAB: PENDING (guard-registered, awaiting owner approval) -->
       <div id="tabPending" style="display:none">
         <div id="pendingList"></div>
       </div>
 
-      <!-- LOG TAB -->
+      <!-- TAB: LOG -->
       <div id="tabLog" style="display:none">
         <div id="logList"></div>
       </div>
 
-      <!-- SETTINGS TAB -->
+      <!-- TAB: SETTINGS -->
       <div id="tabSettings" style="display:none">
+        <!-- My phone -->
         <div class="section animate-in">
-          <div class="section-title" id="txt-my-phone-label"></div>
-          <div class="settings-row">
-            <div class="field"><input id="myPhoneInput" type="tel"></div>
-            <button class="btn btn-gold" onclick="saveMyPhone()" id="txt-save-phone" style="height:44px;padding:0 16px"></button>
+          <div class="section-title" id="txt-my-phone-title"></div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <div class="field" style="flex:1;margin-bottom:0">
+              <input id="myPhoneInput" type="tel">
+            </div>
+            <button class="btn btn-gold" onclick="saveMyPhone()" style="height:44px;padding:0 16px;flex-shrink:0" id="txt-save-phone-btn"></button>
           </div>
         </div>
-        <div class="section animate-in" id="ownerPhoneSection" style="display:none;animation-delay:.05s">
-          <div class="section-title" id="txt-owner-phone-label"></div>
-          <div class="field" style="margin-bottom:0"><input id="ownerPhoneDisplay" type="tel" readonly style="opacity:.6;cursor:not-allowed"></div>
+        <!-- Owner phone (read-only for tenants) -->
+        <div class="section animate-in" id="ownerPhoneSection" style="display:none;animation-delay:.04s">
+          <div class="section-title" id="txt-owner-phone-title"></div>
+          <div class="field" style="margin-bottom:0">
+            <input id="ownerPhoneDisplay" type="tel" readonly style="opacity:.6;cursor:not-allowed">
+          </div>
         </div>
-        <div class="section animate-in" style="animation-delay:.08s" id="tenantSection">
-          <div class="section-title" id="txt-tenants-label"></div>
+        <!-- Tenants (owner only) -->
+        <div class="section animate-in" id="tenantSection" style="display:none;animation-delay:.08s">
+          <div class="section-title" id="txt-tenants-title"></div>
           <div id="tenantFields"></div>
         </div>
       </div>
     </div>
   </main>
   <div class="toast" id="toast"></div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/theme.js"></script>
@@ -106,170 +114,218 @@
   <script src="js/helpers.js"></script>
   <script>
     renderNav('card_owner')
-    document.getElementById('txt-title').textContent=t('owner_title')
-    document.getElementById('txt-subtitle').textContent=t('owner_subtitle')
-    document.getElementById('txt-section').textContent=t('owner_section')
-    document.getElementById('txt-phone-label').textContent=t('owner_phone_label')
-    document.getElementById('loginPhone').placeholder=t('owner_phone_ph')
-    document.getElementById('txt-login-btn').textContent='→  '+t('owner_login_btn')
 
-    let currentUser=null, currentUnit='', allVisitors=[]
+    // ── TEXTS ──────────────────────────────────────────────
+    document.getElementById('txt-title').textContent         = t('owner_title')
+    document.getElementById('txt-subtitle').textContent      = t('owner_subtitle')
+    document.getElementById('txt-section').textContent       = t('owner_section')
+    document.getElementById('txt-phone-label').textContent   = t('owner_phone_label')
+    document.getElementById('loginPhone').placeholder        = t('owner_phone_ph')
+    document.getElementById('txt-login-btn').textContent     = '→  ' + t('owner_login_btn')
 
+    // ── STATE ──────────────────────────────────────────────
+    let currentUser = null, currentUnit = '', allVisitors = []
+
+    // ── LOGIN ──────────────────────────────────────────────
     async function doLogin() {
-      const phone=document.getElementById('loginPhone').value.trim()
-      const err=document.getElementById('loginError')
-      if(!phone){err.textContent=t('vis_error_fill');return}
-      err.textContent=''
+      const phone = document.getElementById('loginPhone').value.trim()
+      const err   = document.getElementById('loginError')
+      if (!phone) { err.textContent = t('vis_error_fill'); return }
+      err.textContent = ''
       try {
-        const user=await apiLoginByPhone(phone)
-        if(!user){err.textContent=t('owner_error');return}
-        currentUser=user; currentUnit=user.unit
+        const user = await apiLoginByPhone(phone)
+        if (!user) { err.textContent = t('owner_error'); return }
+        currentUser = user
+        currentUnit = user.unit
         showDashboard()
-      } catch(e){err.textContent=t('error_server')}
+      } catch(e) { err.textContent = t('error_server') }
     }
 
     function showDashboard() {
-      document.getElementById('loginView').style.display='none'
-      document.getElementById('dashView').style.display='block'
-      const role=currentUser.role==='owner'?'Owner':'Tenant'
-      document.getElementById('txt-welcome').textContent=t('owner_welcome')+', '+role
-      document.getElementById('txt-unit-info').textContent='Unit '+currentUnit
-      document.getElementById('tab-visitors').textContent='🪪 '+t('owner_tab_visitors')
-      document.getElementById('tab-pending').textContent='⏳ '+t('owner_tab_visitors')+' *'
-      document.getElementById('tab-log').textContent='📋 '+t('owner_tab_log')
-      document.getElementById('tab-settings').textContent='⚙️ '+t('owner_tab_settings')
-      document.getElementById('txt-reg-btn').textContent='+ '+t('owner_reg_visitor')
-      loadVisitors()
-      setupSettings()
+      document.getElementById('loginView').style.display  = 'none'
+      document.getElementById('dashView').style.display   = 'block'
+      const isOwner = currentUser.role === 'owner'
+      const roleLabel = isOwner ? t('card_owner') : t('card_tenant')
+      document.getElementById('txt-welcome').textContent    = t('owner_welcome') + ', ' + roleLabel
+      document.getElementById('txt-unit-label').textContent = 'Unit ' + currentUnit
+      document.getElementById('tab-visitors').textContent   = '🪪 ' + t('owner_tab_visitors')
+      document.getElementById('tab-pending').textContent    = '⏳ Lulus'
+      document.getElementById('tab-log').textContent        = '📋 ' + t('owner_tab_log')
+      document.getElementById('tab-settings').textContent   = '⚙️ ' + t('owner_tab_settings')
+      document.getElementById('txt-reg-btn').textContent    = '+ ' + t('owner_reg_visitor')
+      loadAll()
+    }
+
+    function goRegister() {
+      location.href = 'visitor-register.html?from=owner&unit=' + encodeURIComponent(currentUnit)
     }
 
     function switchTab(tab) {
-      ;['visitors','pending','log','settings'].forEach(id=>{
-        document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1)).classList.toggle('active',id===tab)
-        document.getElementById('tabVisitors').style.display=tab==='visitors'?'block':'none'
-        document.getElementById('tabPending').style.display=tab==='pending'?'block':'none'
-        document.getElementById('tabLog').style.display=tab==='log'?'block':'none'
-        document.getElementById('tabSettings').style.display=tab==='settings'?'block':'none'
+      const tabs = ['visitors','pending','log','settings']
+      tabs.forEach(id => {
+        const capId = id.charAt(0).toUpperCase() + id.slice(1)
+        document.getElementById('tab' + capId).style.display = tab === id ? 'block' : 'none'
+        document.getElementById('tab-' + id).classList.toggle('active', tab === id)
       })
+      if (tab === 'settings') setupSettings()
     }
 
-    async function loadVisitors() {
-      allVisitors=await apiGetVisitorsByUnit(currentUnit)
+    async function loadAll() {
+      allVisitors = await apiGetVisitorsByUnit(currentUnit)
       renderVisitors()
       renderPending()
       renderLog()
     }
 
+    // ── VISITORS TAB ───────────────────────────────────────
     function renderVisitors() {
-      const el=document.getElementById('visitorsList')
-      const list=allVisitors.filter(v=>v.status!=='Checked Out')
-      if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">🪪</div><p>'+t('owner_no_visitors')+'</p></div>';return}
-      el.innerHTML=list.map(v=>`
-        <div class="vis-card animate-in">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-            <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
-          </div>
-          <div class="vis-meta">${v.ref_code} · ${fmtDate(v.created_at)}</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">${v.purpose} · ${v.vehicle_plate||t('no_vehicle')}</div>
-          <div style="font-size:11px;color:var(--text-muted)">${regByLabel(v.registered_by)}</div>
-        </div>`).join('')
-    }
+      const el = document.getElementById('visitorsList')
+      const list = allVisitors.filter(v => v.status !== 'Checked Out')
+      if (!list.length) { el.innerHTML = '<div class="empty animate-in"><div class="empty-icon">🪪</div><p>' + t('owner_no_visitors') + '</p></div>'; return }
 
-    function renderPending() {
-      const el=document.getElementById('pendingList')
-      const list=allVisitors.filter(v=>v.status==='Pending'&&v.registered_by==='guard')
-      document.getElementById('tab-pending').textContent='⏳ Lulus'+(list.length?' ('+list.length+')':'')
-      if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">✓</div><p>'+t('owner_no_pending')+'</p></div>';return}
-      el.innerHTML=list.map(v=>`
-        <div class="vis-card animate-in">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-            <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
-          </div>
-          <div class="vis-meta">${v.ref_code} · ${fmtDate(v.created_at)}</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">${v.purpose} · ${v.phone} · ${v.vehicle_plate}</div>
-          <div style="display:flex;gap:8px">
-            <button class="btn-sm btn-approve" onclick="approveVisitor(${v.id},'Approved')">${t('vis_status_approved')}</button>
-            <button class="btn-sm btn-reject" onclick="approveVisitor(${v.id},'Rejected')">${t('vis_status_rejected')}</button>
-          </div>
-        </div>`).join('')
-    }
-
-    function renderLog() {
-      const el=document.getElementById('logList')
-      const list=allVisitors.filter(v=>v.checked_in_at||v.checked_out_at)
-      if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Tiada log.</p></div>';return}
-      el.innerHTML=list.map(v=>`
-        <div class="vis-card animate-in">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-            <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
-          </div>
-          <div class="vis-meta">${v.ref_code}</div>
-          <div style="font-size:12px;color:var(--text-muted)">${v.purpose} · ${v.vehicle_plate||'—'}</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
-            ${v.checked_in_at?'↓ Masuk: '+fmtDate(v.checked_in_at):''}
-            ${v.checked_out_at?'<br>↑ Keluar: '+fmtDate(v.checked_out_at):''}
-          </div>
-        </div>`).join('')
-    }
-
-    async function approveVisitor(id, status) {
-      await apiUpdateVisitorStatus(id, status, {approved_by: currentUser.loginPhone})
-      showToast(status==='Approved'?t('vis_status_approved'):t('vis_status_rejected'),'success')
-      loadVisitors()
-    }
-
-    function setupSettings() {
-      const isOwner=currentUser.role==='owner'
-      document.getElementById('txt-my-phone-label').textContent=t('settings_my_phone')
-      document.getElementById('myPhoneInput').value=currentUser.loginPhone
-      document.getElementById('txt-save-phone').textContent=t('settings_save_phone')
-
-      if(!isOwner) {
-        document.getElementById('ownerPhoneSection').style.display='block'
-        document.getElementById('txt-owner-phone-label').textContent=t('settings_owner_phone')
-        document.getElementById('ownerPhoneDisplay').value=currentUser.phone
+      const counts = {
+        pending:  allVisitors.filter(v => v.status === 'Pending').length,
+        approved: allVisitors.filter(v => v.status === 'Approved').length,
+        total:    allVisitors.length
       }
+      let html = `<div class="section animate-in" style="display:flex;gap:0;padding:0;overflow:hidden;margin-bottom:12px">
+        <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+          <div class="num" style="font-size:22px;color:var(--accent)">${counts.pending}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${t('vis_status_pending')}</div>
+        </div>
+        <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+          <div class="num" style="font-size:22px;color:var(--green)">${counts.approved}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${t('vis_status_approved')}</div>
+        </div>
+        <div style="flex:1;padding:14px;text-align:center">
+          <div class="num" style="font-size:22px">${counts.total}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${t('total')}</div>
+        </div>
+      </div>`
 
-      document.getElementById('txt-tenants-label').textContent=t('settings_tenants')
-      if(isOwner) {
-        document.getElementById('tenantSection').style.display='block'
-        renderTenantFields()
+      list.forEach((v, i) => {
+        html += `<div class="vis-card animate-in" style="animation-delay:${i*0.04}s">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
+          </div>
+          <div class="vis-meta">${v.ref_code} · ${fmtDate(v.created_at)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">${v.purpose} · ${v.vehicle_plate || t('no_vehicle')}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${regByLabel(v.registered_by)}</div>
+        </div>`
+      })
+      el.innerHTML = html
+    }
+
+    // ── PENDING TAB (guard-registered visitors awaiting owner approval) ──
+    function renderPending() {
+      const el   = document.getElementById('pendingList')
+      const list = allVisitors.filter(v => v.status === 'Pending' && v.registered_by === 'guard')
+      const cnt  = list.length
+      document.getElementById('tab-pending').textContent = '⏳ Lulus' + (cnt ? ' (' + cnt + ')' : '')
+
+      if (!list.length) {
+        el.innerHTML = '<div class="empty animate-in"><div class="empty-icon">✓</div><p>' + t('owner_no_pending') + '</p></div>'
+        return
+      }
+      el.innerHTML = list.map((v, i) => `
+        <div class="vis-card animate-in" style="animation-delay:${i*0.04}s">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
+          </div>
+          <div class="vis-meta">${v.ref_code} · ${fmtDate(v.created_at)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">
+            ${v.purpose} · ${v.phone} · ${v.vehicle_plate || '—'}
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-approve" onclick="respondVisitor(${v.id},'Approved')">${t('vis_status_approved')}</button>
+            <button class="btn-sm btn-reject"  onclick="respondVisitor(${v.id},'Rejected')">${t('vis_status_rejected')}</button>
+          </div>
+        </div>`).join('')
+    }
+
+    // ── LOG TAB ────────────────────────────────────────────
+    function renderLog() {
+      const el   = document.getElementById('logList')
+      const list = allVisitors.filter(v => v.checked_in_at || v.checked_out_at)
+      if (!list.length) {
+        el.innerHTML = '<div class="empty animate-in"><div class="empty-icon">📋</div><p>Tiada log.</p></div>'
+        return
+      }
+      el.innerHTML = list.map((v, i) => `
+        <div class="vis-card animate-in" style="animation-delay:${i*0.04}s">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
+          </div>
+          <div class="vis-meta">${v.ref_code} · ${v.vehicle_plate || '—'}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${v.purpose}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.8">
+            ${v.checked_in_at  ? '↓ Masuk: '  + fmtDate(v.checked_in_at)  : ''}
+            ${v.checked_out_at ? '<br>↑ Keluar: ' + fmtDate(v.checked_out_at) : ''}
+          </div>
+        </div>`).join('')
+    }
+
+    async function respondVisitor(id, status) {
+      await apiUpdateVisitorStatus(id, status, { approved_by: currentUser.loginPhone })
+      showToast(t(status === 'Approved' ? 'vis_status_approved' : 'vis_status_rejected'), 'success')
+      loadAll()
+    }
+
+    // ── SETTINGS TAB ───────────────────────────────────────
+    function setupSettings() {
+      const isOwner = currentUser.role === 'owner'
+      document.getElementById('txt-my-phone-title').textContent   = t('settings_my_phone')
+      document.getElementById('myPhoneInput').value               = currentUser.loginPhone
+      document.getElementById('txt-save-phone-btn').textContent   = t('settings_save_phone')
+
+      if (!isOwner) {
+        // Tenant — show owner phone read-only
+        document.getElementById('ownerPhoneSection').style.display = 'block'
+        document.getElementById('txt-owner-phone-title').textContent = t('settings_owner_phone')
+        document.getElementById('ownerPhoneDisplay').value         = currentUser.phone
+        document.getElementById('tenantSection').style.display     = 'none'
       } else {
-        document.getElementById('tenantSection').style.display='none'
+        // Owner — show tenant management
+        document.getElementById('ownerPhoneSection').style.display = 'none'
+        document.getElementById('tenantSection').style.display     = 'block'
+        document.getElementById('txt-tenants-title').textContent   = t('settings_tenants')
+        renderTenantFields()
       }
     }
 
     function renderTenantFields() {
-      const c=currentUser
-      const slots=[['tenant1',c.tenant1],['tenant2',c.tenant2],['tenant3',c.tenant3]]
-      document.getElementById('tenantFields').innerHTML=slots.map(([slot,val],i)=>`
+      const slots = [['tenant1', currentUser.tenant1], ['tenant2', currentUser.tenant2], ['tenant3', currentUser.tenant3]]
+      document.getElementById('tenantFields').innerHTML = slots.map(([slot, val], i) => `
         <div class="phone-item">
-          <input id="${slot}" type="tel" value="${val||''}" placeholder="${t('settings_tenant_ph')} ${i+1}">
-          <button class="btn-sm btn-approve" onclick="saveTenant('${slot}')">${t('save')}</button>
-          <button class="btn-sm btn-reject" onclick="removeTenant('${slot}')" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)">✕</button>
+          <input id="${slot}" type="tel" value="${val || ''}" placeholder="${t('settings_tenant_ph')} ${i + 1}">
+          <button class="btn-sm btn-approve" onclick="saveTenant('${slot}')" style="white-space:nowrap">${t('save')}</button>
+          <button class="btn-sm" onclick="removeTenant('${slot}')" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)">✕</button>
         </div>`).join('')
     }
 
     async function saveMyPhone() {
-      const phone=document.getElementById('myPhoneInput').value.trim()
-      if(!phone) return
-      const slot=currentUser.role==='owner' ? 'owner' : ['tenant1','tenant2','tenant3'].find(s=>currentUser[s]===currentUser.loginPhone)
-      let ok
-      if(slot==='owner') ok=await apiUpdateOwnerPhone(currentUnit, phone)
-      else ok=await apiUpdateTenantSlot(currentUnit, slot, phone)
-      showToast(ok?t('settings_phone_updated'):t('settings_phone_error'), ok?'success':'error-toast')
-      if(ok) { currentUser.loginPhone=phone; if(slot==='owner') currentUser.phone=phone }
+      const phone = document.getElementById('myPhoneInput').value.trim()
+      if (!phone) return
+      let ok = false
+      if (currentUser.role === 'owner') {
+        ok = await apiUpdateOwnerPhone(currentUnit, phone)
+      } else {
+        const slot = ['tenant1','tenant2','tenant3'].find(s => currentUser[s] === currentUser.loginPhone)
+        if (slot) ok = await apiUpdateTenantSlot(currentUnit, slot, phone)
+      }
+      showToast(ok ? t('settings_phone_updated') : t('settings_phone_error'), ok ? 'success' : 'error-toast')
+      if (ok) currentUser.loginPhone = phone
     }
 
     async function saveTenant(slot) {
-      const phone=document.getElementById(slot).value.trim()
-      const ok=await apiUpdateTenantSlot(currentUnit, slot, phone||null)
-      showToast(ok?t('settings_phone_updated'):t('settings_phone_error'), ok?'success':'error-toast')
-      if(ok) { currentUser[slot]=phone||null }
+      const phone = document.getElementById(slot).value.trim()
+      const ok    = await apiUpdateTenantSlot(currentUnit, slot, phone || null)
+      showToast(ok ? t('settings_phone_updated') : t('settings_phone_error'), ok ? 'success' : 'error-toast')
+      if (ok) currentUser[slot] = phone || null
     }
 
     async function removeTenant(slot) {
-      document.getElementById(slot).value=''
+      document.getElementById(slot).value = ''
       await saveTenant(slot)
     }
   </script>
