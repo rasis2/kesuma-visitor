@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Residen — Kesuma JMB</title>
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+    .menu-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 16px;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;transition:all .2s;cursor:pointer;min-height:100px}
+    .menu-card:hover{border-color:rgba(var(--accent-rgb),.4);background:var(--surface);transform:translateY(-2px);box-shadow:var(--shadow)}
+    .menu-icon{font-size:28px}
+    .menu-label{font-family:var(--heading-font);font-size:13px;font-weight:700}
+    .menu-desc{font-size:11px;color:var(--text-muted);line-height:1.4}
+    /* SUB PAGES */
+    .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);cursor:pointer;margin-bottom:16px;padding:6px 0}
+    .back-btn:hover{color:var(--accent)}
+    .vis-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+    .vis-name{font-family:var(--heading-font);font-size:14px;font-weight:700;margin-bottom:2px}
+    .vis-meta{font-size:11px;color:var(--text-muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+    .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+    .info-row:last-child{border-bottom:none}
+    .info-label{color:var(--text-muted)}
+    .qr-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0 8px}
+    #qrCanvas{display:flex;justify-content:center}
+    #qrCanvas canvas,#qrCanvas img{border-radius:10px;border:3px solid var(--accent);padding:8px;background:#fff}
+    .ref-box{background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),.3);border-radius:10px;padding:14px 18px;text-align:center;margin:14px 0}
+    .ref-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+    .ref-code{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--accent);letter-spacing:4px}
+    .action-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+    .btn-action{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--body-font);transition:all .2s}
+    .btn-action:hover{border-color:rgba(var(--accent-rgb),.4);color:var(--accent)}
+    .btn-copied{border-color:var(--green)!important;color:var(--green)!important}
+    .tl-row{display:flex;gap:12px;padding:8px 0;font-size:13px}
+    .tl-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:4px}
+    .tl-dot.done{background:var(--green);border-color:var(--green)}
+    .tl-dot.active{background:var(--accent);border-color:var(--accent)}
+    .phone-item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .phone-item input{flex:1}
+    .btn-sm{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--body-font);transition:all .2s}
+    .btn-approve{background:var(--green);color:#fff}.btn-approve:hover{opacity:.85}
+    .btn-reject{background:rgba(224,92,92,.15);color:var(--red);border:1px solid rgba(224,92,92,.3)}
+  </style>
+</head>
+<body>
+  <nav class="nav" id="mainNav"></nav>
+  <main class="main" id="mainContent">
+    <!-- Content rendered by JS -->
+  </main>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpers.js"></script>
+  <script>
+    const session = requireSession(['owner','tenant'])
+    if (!session) throw new Error('no session')
+    renderNav('', session)
+
+    const isOwner = session.role === 'owner'
+    const unit    = session.unit
+
+    // ── MENU ITEMS ─────────────────────────────────────────
+    const ownerMenus = [
+      { icon:'📝', label:'Daftar Pelawat', desc:'Register pelawat baru', fn:'showRegister' },
+      { icon:'📋', label:'Log Pelawat', desc:'Rekod masuk & keluar', fn:'showLog' },
+      { icon:'👤', label:'Profil Saya', desc:'Kemaskini email & password', fn:'showProfile' },
+      { icon:'👥', label:'Penyewa', desc:'Urus akaun penyewa', fn:'showTenants' },
+    ]
+    const tenantMenus = [
+      { icon:'📝', label:'Daftar Pelawat', desc:'Register pelawat baru', fn:'showRegister' },
+      { icon:'📋', label:'Log Pelawat', desc:'Rekod masuk & keluar', fn:'showLog' },
+      { icon:'👤', label:'Profil Saya', desc:'Kemaskini email & password', fn:'showProfile' },
+    ]
+    const menus = isOwner ? ownerMenus : tenantMenus
+
+    // ── SHOW HOME ──────────────────────────────────────────
+    function showHome() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="page-header animate-in">
+          <div class="page-icon teal">🏠</div>
+          <h1 class="page-title">${isOwner ? 'Pemilik' : 'Penyewa'}</h1>
+          <p class="page-subtitle">Unit ${unit}</p>
+        </div>
+        <div class="menu-grid animate-in" style="animation-delay:.05s">
+          ${menus.map(m => `
+            <div class="menu-card" onclick="${m.fn}()">
+              <div class="menu-icon">${m.icon}</div>
+              <div class="menu-label">${m.label}</div>
+              <div class="menu-desc">${m.desc}</div>
+            </div>`).join('')}
+        </div>`
+    }
+
+    // ── REGISTER VISITOR ──────────────────────────────────
+    function showRegister() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="back-btn" onclick="showHome()">← Balik</div>
+        <div id="regForm">
+          <div class="page-header animate-in">
+            <div class="page-icon teal">📝</div>
+            <h1 class="page-title">Daftar Pelawat</h1>
+            <p class="page-subtitle">Unit ${unit}</p>
+          </div>
+          <div class="section animate-in" style="animation-delay:.04s">
+            <div class="section-title">MAKLUMAT PELAWAT</div>
+            <div class="field"><label>Nama Penuh</label><input id="visName" placeholder="Nama seperti dalam IC"></div>
+            <div class="field"><label>No. IC</label><input id="visIc" placeholder="901234-56-7890"></div>
+            <div class="field"><label>No. Telefon</label><input id="visPhone" type="tel" placeholder="0123456789"></div>
+          </div>
+          <div class="section animate-in" style="animation-delay:.06s">
+            <div class="section-title">KENDERAAN</div>
+            <div class="field">
+              <label>Jenis Kenderaan</label>
+              <div class="select-wrap">
+                <select id="visVehicleType" onchange="onVehicleChange()">
+                  <option value="">— Pilih —</option>
+                  <option value="Kereta">Kereta</option>
+                  <option value="Motosikal">Motosikal</option>
+                  <option value="Lori / Van">Lori / Van</option>
+                  <option value="Tiada">Tiada Kenderaan</option>
+                </select>
+              </div>
+            </div>
+            <div class="field" id="plateField">
+              <label>No. Plat</label>
+              <input id="visPlate" style="text-transform:uppercase" placeholder="WXX 1234">
+            </div>
+          </div>
+          <div class="section animate-in" style="animation-delay:.08s">
+            <div class="section-title">TUJUAN LAWATAN</div>
+            <div class="field">
+              <label>Tujuan</label>
+              <div class="select-wrap">
+                <select id="visPurpose">
+                  <option value="">— Pilih tujuan —</option>
+                  <option value="Ziarah">Ziarah / Melawat</option>
+                  <option value="Hantar Barang">Hantar Barang</option>
+                  <option value="Urusan Kerja">Urusan Kerja</option>
+                  <option value="Pembaikan">Pembaikan</option>
+                  <option value="Lain-lain">Lain-lain</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-gold animate-in" onclick="submitRegister()" id="submitBtn" style="animation-delay:.1s">✓  Daftar Sekarang</button>
+        </div>
+        <div id="regSuccess" style="display:none"></div>`
+    }
+
+    function onVehicleChange() {
+      const v = document.getElementById('visVehicleType').value
+      document.getElementById('plateField').style.display = v === 'Tiada' ? 'none' : 'block'
+      if (v === 'Tiada') document.getElementById('visPlate').value = 'TIADA'
+      else if (document.getElementById('visPlate').value === 'TIADA') document.getElementById('visPlate').value = ''
+    }
+
+    async function submitRegister() {
+      const name          = document.getElementById('visName').value.trim()
+      const ic_no         = document.getElementById('visIc').value.trim()
+      const phone         = document.getElementById('visPhone').value.trim()
+      const vehicle_type  = document.getElementById('visVehicleType').value
+      const vehicle_plate = document.getElementById('visPlate').value.trim().toUpperCase()
+      const purpose       = document.getElementById('visPurpose').value
+      if (!name||!ic_no||!phone||!vehicle_plate||!purpose) { showToast('Sila isi semua maklumat wajib.','error-toast'); return }
+      const btn = document.getElementById('submitBtn')
+      btn.textContent='⏳ Mendaftar...'; btn.disabled=true
+      try {
+        const result = await apiRegisterVisitor({ name, ic_no, phone, vehicle_type, vehicle_plate, unit, purpose, registered_by: session.role, registered_phone: session.phone||null })
+        // Auto-approve since owner/tenant registers
+        await apiUpdateVisitorStatus(result.id, 'Approved', { approved_by: session.phone||session.unit })
+        showRegisterSuccess(result, {name,ic_no,phone,vehicle_type,vehicle_plate,purpose})
+      } catch(e) { showToast('Ralat pelayan.','error-toast') }
+      finally { btn.textContent='✓  Daftar Sekarang'; btn.disabled=false }
+    }
+
+    let currentRef = ''
+    function showRegisterSuccess(visitor, info) {
+      currentRef = visitor.ref_code
+      document.getElementById('regForm').style.display='none'
+      document.getElementById('regSuccess').style.display='block'
+      document.getElementById('regSuccess').innerHTML = `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center">
+          <div style="font-size:48px;margin-bottom:12px">✅</div>
+          <h2 style="font-family:var(--heading-font);font-size:20px;font-weight:800;margin-bottom:6px">Pendaftaran Berjaya!</h2>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Kongsi QR code atau kod rujukan kepada pelawat anda.</p>
+          <div class="ref-box">
+            <div class="ref-label">KOD RUJUKAN</div>
+            <div class="ref-code">${currentRef}</div>
+          </div>
+          <div class="action-btns">
+            <button class="btn-action" id="copyBtn" onclick="copyRef()">📋 Salin Kod</button>
+            <button class="btn-action" onclick="downloadQR()">⬇️ Muat Turun QR</button>
+          </div>
+          <div class="qr-wrap"><div id="qrCanvas"></div>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:10px">QR sah 24 jam · Tunjukkan kepada guard</p>
+          </div>
+          <div style="margin-top:16px;text-align:left">
+            <div class="section-title">MAKLUMAT PENDAFTARAN</div>
+            ${[['Nama',info.name],['No. IC',info.ic_no],['Telefon',info.phone],['Tujuan',info.purpose],['Kenderaan',info.vehicle_plate]].map(([l,v])=>`<div class="info-row"><span class="info-label">${l}</span><span style="font-weight:600">${v}</span></div>`).join('')}
+          </div>
+          <button class="btn btn-gold" style="margin-top:20px" onclick="showRegister()">+ Daftar Pelawat Lain</button>
+        </div>`
+      const qc = document.getElementById('qrCanvas'); qc.innerHTML=''
+      new QRCode(qc, {text:currentRef,width:180,height:180,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H})
+    }
+
+    function copyRef() {
+      navigator.clipboard.writeText(currentRef).then(()=>{
+        const btn=document.getElementById('copyBtn')
+        btn.classList.add('btn-copied'); btn.innerHTML='✓ Disalin!'
+        setTimeout(()=>{btn.classList.remove('btn-copied');btn.innerHTML='📋 Salin Kod'},2000)
+      })
+    }
+    function downloadQR() {
+      const canvas=document.querySelector('#qrCanvas canvas'); if(!canvas) return
+      const a=document.createElement('a'); a.download='visitor-'+currentRef+'.png'; a.href=canvas.toDataURL('image/png'); a.click()
+    }
+
+    // ── LOG ────────────────────────────────────────────────
+    async function showLog() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="back-btn" onclick="showHome()">← Balik</div>
+        <div class="page-header animate-in">
+          <div class="page-icon gold">📋</div>
+          <h1 class="page-title">Log Pelawat</h1>
+          <p class="page-subtitle">Unit ${unit}</p>
+        </div>
+        <div id="logContent" class="animate-in" style="animation-delay:.05s">
+          <p style="font-size:13px;color:var(--text-muted);text-align:center;padding:24px">Memuatkan...</p>
+        </div>`
+      const visitors = await apiGetVisitorsByUnit(unit)
+      const el = document.getElementById('logContent')
+      if (!visitors.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Tiada rekod.</p></div>'; return }
+
+      // Stats
+      const today = new Date().toDateString()
+      const todayCount = visitors.filter(v=>new Date(v.created_at).toDateString()===today).length
+      const inCount    = visitors.filter(v=>v.status==='Checked In').length
+
+      el.innerHTML = `
+        <div class="section" style="display:flex;gap:0;padding:0;overflow:hidden;margin-bottom:12px">
+          <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+            <div class="num" style="font-size:22px;color:var(--accent)">${todayCount}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Hari ini</div>
+          </div>
+          <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+            <div class="num" style="font-size:22px;color:var(--green)">${inCount}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Dalam</div>
+          </div>
+          <div style="flex:1;padding:14px;text-align:center">
+            <div class="num" style="font-size:22px">${visitors.length}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Jumlah</div>
+          </div>
+        </div>
+        ${visitors.map((v,i)=>`
+          <div class="vis-card animate-in" style="animation-delay:${i*0.04}s">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+              <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
+            </div>
+            <div class="vis-meta">${v.ref_code} · ${fmtDate(v.created_at)}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${v.purpose} · ${v.vehicle_plate||'—'}</div>
+            ${v.checked_in_at?`<div style="font-size:11px;color:var(--green);margin-top:4px">↓ Masuk: ${fmtDate(v.checked_in_at)}</div>`:''}
+            ${v.checked_out_at?`<div style="font-size:11px;color:var(--text-muted)">↑ Keluar: ${fmtDate(v.checked_out_at)}</div>`:''}
+          </div>`).join('')}`
+    }
+
+    // ── PROFILE ────────────────────────────────────────────
+    async function showProfile() {
+      const owner = await apiGetOwner(unit)
+      let current = {}
+      if (session.role === 'owner') {
+        current = { phone: owner.phone, email: owner.email||'', field_email:'email', field_password:'password', field_phone:'phone' }
+      } else {
+        const slotData = { tenant1:{phone:owner.tenant1,email:owner.tenant1_email,ep:'tenant1_email',pp:'tenant1_password',php:'tenant1'},
+          tenant2:{phone:owner.tenant2,email:owner.tenant2_email,ep:'tenant2_email',pp:'tenant2_password',php:'tenant2'},
+          tenant3:{phone:owner.tenant3,email:owner.tenant3_email,ep:'tenant3_email',pp:'tenant3_password',php:'tenant3'} }
+        const sd = slotData[session.slot]||{}
+        current = { phone:sd.phone||'', email:sd.email||'', field_email:sd.ep, field_password:sd.pp, field_phone:sd.php }
+      }
+
+      document.getElementById('mainContent').innerHTML = `
+        <div class="back-btn" onclick="showHome()">← Balik</div>
+        <div class="page-header animate-in">
+          <div class="page-icon teal">👤</div>
+          <h1 class="page-title">Profil Saya</h1>
+          <p class="page-subtitle">Unit ${unit} · ${session.role==='owner'?'Pemilik':'Penyewa'}</p>
+        </div>
+        <div class="section animate-in" style="animation-delay:.05s">
+          <div class="section-title">MAKLUMAT AKAUN</div>
+          <div class="field"><label>No. Telefon</label><input id="pf-phone" type="tel" value="${current.phone}"></div>
+          <div class="field"><label>Email</label><input id="pf-email" type="email" value="${current.email}" placeholder="email@contoh.com"></div>
+          <div class="field"><label>Password Baru</label><input id="pf-password" type="password" placeholder="Kosongkan jika tak nak tukar"></div>
+          <div class="field"><label>Sahkan Password</label><input id="pf-password2" type="password" placeholder="Taip semula password baru"></div>
+        </div>
+        <button class="btn btn-gold animate-in" onclick="saveProfile('${current.field_email}','${current.field_password}','${current.field_phone}')" style="animation-delay:.08s">💾 Simpan Profil</button>`
+    }
+
+    async function saveProfile(emailField, passwordField, phoneField) {
+      const phone    = document.getElementById('pf-phone').value.trim()
+      const email    = document.getElementById('pf-email').value.trim()
+      const password = document.getElementById('pf-password').value
+      const password2= document.getElementById('pf-password2').value
+      if (password && password !== password2) { showToast('Password tidak sepadan!','error-toast'); return }
+      const data = {}
+      if (phone) data[phoneField]    = phone
+      if (email) data[emailField]    = email
+      if (password) data[passwordField] = password
+      const ok = await apiUpdateOwner(unit, data)
+      showToast(ok ? 'Profil berjaya dikemaskini.' : 'Gagal simpan.', ok?'success':'error-toast')
+      if (ok && password) { session.password = password; saveSession(session) }
+    }
+
+    // ── TENANTS (owner only) ───────────────────────────────
+    async function showTenants() {
+      const owner = await apiGetOwner(unit)
+      const slots = [
+        { slot:'tenant1', label:'Penyewa 1', phone:owner.tenant1||'', email:owner.tenant1_email||'', has: !!owner.tenant1 },
+        { slot:'tenant2', label:'Penyewa 2', phone:owner.tenant2||'', email:owner.tenant2_email||'', has: !!owner.tenant2 },
+        { slot:'tenant3', label:'Penyewa 3', phone:owner.tenant3||'', email:owner.tenant3_email||'', has: !!owner.tenant3 },
+      ]
+      document.getElementById('mainContent').innerHTML = `
+        <div class="back-btn" onclick="showHome()">← Balik</div>
+        <div class="page-header animate-in">
+          <div class="page-icon teal">👥</div>
+          <h1 class="page-title">Urus Penyewa</h1>
+          <p class="page-subtitle">Unit ${unit} · Max 3 penyewa</p>
+        </div>
+        ${slots.map((s,i)=>`
+          <div class="section animate-in" style="animation-delay:${i*0.05}s">
+            <div class="section-title">${s.label} ${s.has?'<span style="color:var(--green);font-size:10px">● Aktif</span>':'<span style="color:var(--text-muted);font-size:10px">● Kosong</span>'}</div>
+            <div class="field"><label>No. Telefon</label><input id="t-phone-${s.slot}" type="tel" value="${s.phone}" placeholder="0123456789"></div>
+            <div class="field"><label>Email</label><input id="t-email-${s.slot}" type="email" value="${s.email}" placeholder="email@contoh.com"></div>
+            <div class="field"><label>Password</label><input id="t-pass-${s.slot}" type="password" placeholder="${s.has?'Kosongkan jika tak nak tukar':'Password baru'}"></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-gold" onclick="saveTenant('${s.slot}')" style="flex:1">💾 Simpan</button>
+              ${s.has?`<button class="btn btn-outline" onclick="removeTenant('${s.slot}')" style="flex-shrink:0;padding:0 14px">✕ Buang</button>`:''}
+            </div>
+          </div>`).join('')}`
+    }
+
+    async function saveTenant(slot) {
+      const phone = document.getElementById('t-phone-'+slot).value.trim()
+      const email = document.getElementById('t-email-'+slot).value.trim()
+      const pass  = document.getElementById('t-pass-'+slot).value
+      const data  = { [slot]: phone||null, [slot+'_email']: email||null }
+      if (pass) data[slot+'_password'] = pass
+      const ok = await apiUpdateOwner(unit, data)
+      showToast(ok?'Penyewa berjaya dikemaskini.':'Gagal simpan.', ok?'success':'error-toast')
+    }
+
+    async function removeTenant(slot) {
+      const ok = await apiUpdateOwner(unit, { [slot]:null, [slot+'_email']:null, [slot+'_password']:null })
+      showToast(ok?'Penyewa berjaya dibuang.':'Gagal.', ok?'success':'error-toast')
+      if (ok) showTenants()
+    }
+
+    // ── INIT ───────────────────────────────────────────────
+    showHome()
+  </script>
+</body>
+</html>

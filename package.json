@@ -1,0 +1,12 @@
+{
+  "name": "kesuma-jmb-v2",
+  "version": "2.1.0",
+  "description": "Kesuma JMB Visitor Management System",
+  "scripts": {
+    "start": "npx serve . -p 3000 --no-clipboard",
+    "dev": "npx serve . -p 3000 --no-clipboard"
+  },
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

@@ -8,97 +8,88 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="css/style.css">
   <style>
+    body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:80px 0 40px;box-sizing:border-box}
+    body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(var(--accent-rgb),.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+    .topbar{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+    .topbar-logo{font-family:var(--heading-font);font-size:13px;font-weight:800;color:var(--text-muted)}
+    .wrap{position:relative;z-index:1;width:min(440px,100%);padding:0 20px;box-sizing:border-box}
     .info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
     .info-row:last-child{border-bottom:none}
     .info-label{color:var(--text-muted)}
     .info-val{font-weight:600;text-align:right;max-width:60%}
     .tl-row{display:flex;gap:12px;padding:8px 0;font-size:13px}
-    .tl-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:4px;transition:all .2s}
+    .tl-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:4px}
     .tl-dot.done{background:var(--green);border-color:var(--green)}
     .tl-dot.active{background:var(--accent);border-color:var(--accent)}
-    .tl-label{font-weight:600;color:var(--text)}
-    .tl-time{font-size:11px;color:var(--text-muted);margin-top:2px;font-family:'JetBrains Mono',monospace}
   </style>
 </head>
 <body>
-  <nav class="nav" id="mainNav"></nav>
-  <main class="main">
-    <div class="page-header animate-in">
-      <div class="page-icon gold">🔍</div>
-      <h1 class="page-title" id="txt-title"></h1>
-      <p class="page-subtitle" id="txt-subtitle"></p>
+  <div class="topbar">
+    <a href="index.html" style="font-family:var(--heading-font);font-size:13px;font-weight:800;color:var(--text-muted);text-decoration:none">← Kesuma JMB</a>
+    <div style="display:flex;gap:8px">
+      <div id="themeSwitcher"></div>
+      <div id="langSwitcher"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="page-header animate-in" style="text-align:center">
+      <div class="page-icon gold" style="margin:0 auto 12px">🔍</div>
+      <h1 class="page-title">Semak Status Lawatan</h1>
+      <p class="page-subtitle">Masukkan kod rujukan anda</p>
     </div>
     <div class="section animate-in" style="animation-delay:.05s">
-      <div class="section-title" id="txt-section"></div>
-      <div class="field">
-        <label id="txt-label"></label>
-        <input id="refInput" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')checkStatus()">
-        <div class="error-text" id="checkError" style="margin-top:4px"></div>
-      </div>
+      <div class="section-title">KOD RUJUKAN</div>
+      <input id="refInput" style="text-transform:uppercase;margin-bottom:8px" placeholder="KESXXXXXX" onkeydown="if(event.key==='Enter')checkStatus()">
+      <button class="btn btn-gold" onclick="checkStatus()">🔍  Semak Status</button>
+      <div class="error-text" id="checkError" style="margin-top:4px"></div>
     </div>
-    <button class="btn btn-gold animate-in" onclick="checkStatus()" id="txt-btn" style="animation-delay:.08s"></button>
-    <div id="result" style="margin-top:16px"></div>
-  </main>
-  <div class="toast" id="toast"></div>
+    <div id="result"></div>
+  </div>
 
   <script src="js/i18n.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/nav.js"></script>
   <script src="js/api.js"></script>
   <script src="js/helpers.js"></script>
   <script>
-    renderNav('vis_check_title')
-    document.getElementById('txt-title').textContent   = t('vis_check_title')
-    document.getElementById('txt-subtitle').textContent = t('vis_check_subtitle')
-    document.getElementById('txt-section').textContent = t('vis_check_section')
-    document.getElementById('txt-label').textContent   = t('vis_check_label')
-    document.getElementById('refInput').placeholder    = t('vis_check_ph')
-    document.getElementById('txt-btn').textContent     = '🔍  ' + t('vis_check_btn')
+    renderThemeSwitcher('themeSwitcher')
+    renderLangSwitcher('langSwitcher')
 
     async function checkStatus() {
       const code = document.getElementById('refInput').value.trim().toUpperCase()
       const err  = document.getElementById('checkError')
-      if (!code) { err.textContent = t('vis_error_fill'); return }
+      if (!code) { err.textContent = 'Sila masukkan kod rujukan.'; return }
       err.textContent = ''
       try {
         const v = await apiGetVisitorByRef(code)
-        if (!v) { err.textContent = t('vis_check_not_found'); document.getElementById('result').innerHTML = ''; return }
+        if (!v) { err.textContent = 'Kod rujukan tidak dijumpai.'; document.getElementById('result').innerHTML=''; return }
         renderResult(v)
-      } catch(e) { err.textContent = t('error_server') }
+      } catch(e) { err.textContent = 'Ralat pelayan.' }
     }
 
     function renderResult(v) {
       const expired = isExpired(v)
       const steps = [
-        { label: 'Berdaftar',   ts: v.created_at,     done: true,            active: v.status === 'Pending' },
-        { label: 'Diluluskan',  ts: v.approved_at,    done: !!v.approved_at, active: v.status === 'Approved' },
-        { label: 'Telah Masuk', ts: v.checked_in_at,  done: !!v.checked_in_at,  active: v.status === 'Checked In' },
-        { label: 'Telah Keluar',ts: v.checked_out_at, done: !!v.checked_out_at, active: v.status === 'Checked Out' },
+        { label:'Berdaftar',   ts:v.created_at,    done:true,             active:v.status==='Pending' },
+        { label:'Diluluskan',  ts:v.approved_at,   done:!!v.approved_at,  active:v.status==='Approved' },
+        { label:'Telah Masuk', ts:v.checked_in_at, done:!!v.checked_in_at,active:v.status==='Checked In' },
+        { label:'Telah Keluar',ts:v.checked_out_at,done:!!v.checked_out_at,active:v.status==='Checked Out' },
       ]
-
       document.getElementById('result').innerHTML = `
         <div class="section animate-in">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
             <div>
               <div style="font-family:var(--heading-font);font-size:18px;font-weight:800">${v.name}</div>
               <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-top:2px">${v.ref_code}</div>
-            </div>
-            ${statusBadge(v.status)}
+            </div>${statusBadge(v.status)}
           </div>
           <div class="info-row"><span class="info-label">Unit</span><span class="info-val">${v.unit}</span></div>
-          <div class="info-row"><span class="info-label">${t('vis_purpose')}</span><span class="info-val">${v.purpose}</span></div>
-          <div class="info-row"><span class="info-label">${t('vis_vehicle_plate')}</span><span class="info-val">${v.vehicle_plate || '—'}</span></div>
-          ${expired && v.status === 'Approved' ? `<div style="margin-top:8px;padding:8px 12px;background:rgba(224,92,92,.1);border-radius:7px;font-size:12px;color:var(--red)">⚠️ ${t('guard_expired')}</div>` : ''}
+          <div class="info-row"><span class="info-label">Tujuan</span><span class="info-val">${v.purpose}</span></div>
+          <div class="info-row"><span class="info-label">Kenderaan</span><span class="info-val">${v.vehicle_plate||'—'}</span></div>
+          ${expired&&v.status==='Approved'?`<div style="margin-top:8px;padding:8px 12px;background:rgba(224,92,92,.1);border-radius:7px;font-size:12px;color:var(--red)">⚠️ QR Tamat Tempoh (>24 jam selepas diluluskan)</div>`:''}
           <div style="margin-top:14px">
-            <div class="section-title" style="margin-bottom:10px">TIMELINE</div>
-            ${steps.map(s => `
-              <div class="tl-row">
-                <div class="tl-dot${s.done ? ' done' : s.active ? ' active' : ''}"></div>
-                <div>
-                  <div class="tl-label">${s.label}</div>
-                  ${s.ts ? `<div class="tl-time">${fmtDateFull(s.ts)}</div>` : ''}
-                </div>
-              </div>`).join('')}
+            <div class="section-title" style="margin-bottom:8px">TIMELINE</div>
+            ${steps.map(s=>`<div class="tl-row"><div class="tl-dot${s.done?' done':s.active?' active':''}"></div><div><div style="font-weight:600;color:var(--text)">${s.label}</div>${s.ts?`<div style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace">${fmtDate(s.ts)}</div>`:''}</div></div>`).join('')}
           </div>
         </div>`
     }

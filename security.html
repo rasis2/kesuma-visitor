@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security — Kesuma JMB</title>
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+    .menu-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 16px;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;transition:all .2s;cursor:pointer;min-height:100px}
+    .menu-card:hover{border-color:rgba(var(--accent-rgb),.4);background:var(--surface);transform:translateY(-2px);box-shadow:var(--shadow)}
+    .menu-icon{font-size:28px}
+    .menu-label{font-family:var(--heading-font);font-size:13px;font-weight:700}
+    .menu-desc{font-size:11px;color:var(--text-muted);line-height:1.4}
+    .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);cursor:pointer;margin-bottom:16px;padding:6px 0}
+    .back-btn:hover{color:var(--accent)}
+    .vis-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:border-color .2s}
+    .vis-card:hover{border-color:var(--border2)}
+    .vis-card.in{border-left:3px solid var(--green)}
+    .vis-card.out{border-left:3px solid var(--text-muted);opacity:.7}
+    .vis-name{font-family:var(--heading-font);font-size:14px;font-weight:700;margin-bottom:2px}
+    .vis-meta{font-size:11px;color:var(--text-muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+    .btn-sm{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--body-font);transition:all .2s}
+    .btn-checkin{background:rgba(99,179,237,.18);color:#63b3ed;border:1px solid rgba(99,179,237,.3)}
+    .btn-checkin:hover{background:rgba(99,179,237,.28)}
+    .btn-checkout{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)}
+    .btn-checkout:hover{background:var(--surface)}
+    .result-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px}
+    .info-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+    .info-row:last-child{border-bottom:none}
+    .info-label{color:var(--text-muted)}
+    .status-msg{padding:8px 12px;border-radius:7px;font-size:12px;font-weight:600;text-align:center}
+    .status-msg.warn{background:rgba(201,168,76,.1);color:var(--accent)}
+    .status-msg.err{background:rgba(224,92,92,.1);color:var(--red)}
+    .contact-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:12px}
+    .contact-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+    .contact-row:last-child{border-bottom:none}
+  </style>
+</head>
+<body>
+  <nav class="nav" id="mainNav"></nav>
+  <main class="main" id="mainContent"></main>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpers.js"></script>
+  <script>
+    const session = requireSession(['security'])
+    if (!session) throw new Error('no session')
+    renderNav('', session)
+
+    const menus = [
+      { icon:'🔍', label:'Semak & Check In', desc:'Imbas QR atau taip kod', fn:'showScan' },
+      { icon:'📝', label:'Daftar Walk-in', desc:'Register pelawat tanpa QR', fn:'showWalkin' },
+      { icon:'🚪', label:'Check Out', desc:'Rekod pelawat keluar', fn:'showCheckout' },
+      { icon:'📋', label:'Log Hari Ini', desc:'Semua rekod pelawat', fn:'showLog' },
+    ]
+
+    function showHome() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="page-header animate-in">
+          <div class="page-icon" style="background:rgba(159,122,234,.12);border:1px solid rgba(159,122,234,.2)">🛡️</div>
+          <h1 class="page-title">Security</h1>
+          <p class="page-subtitle">${session.name}</p>
+        </div>
+        <div class="menu-grid animate-in" style="animation-delay:.05s">
+          ${menus.map(m=>`
+            <div class="menu-card" onclick="${m.fn}()">
+              <div class="menu-icon">${m.icon}</div>
+              <div class="menu-label">${m.label}</div>
+              <div class="menu-desc">${m.desc}</div>
+            </div>`).join('')}
+        </div>`
+    }
+
+    // ── SCAN & CHECK IN ────────────────────────────────────
+    function showScan() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="back-btn" onclick="showHome()">← Balik</div>
+        <div class="page-header animate-in">
+          <div class="page-icon" style="background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.2)">🔍</div>
+          <h1 class="page-title">Semak & Check In</h1>
+          <p class="page-subtitle">Masukkan Ref Code pelawat</p>
+        </div>
+        <div class="section animate-in" style="animation-delay:.05s">
+          <div class="section-title">KOD RUJUKAN</div>
+          <input id="scanInput" style="text-transform:uppercase;margin-bottom:8px" placeholder="KESXXXXXX" onkeydown="if(event.key==='Enter')doScan()">
+          <button class="btn btn-gold" onclick="doScan()">🔍  Semak Pelawat</button>
+          <div id="scanResult"></div>
+        </div>`
+    }
+
+    async function doScan() {
+      const code = document.getElementById('scanInput').value.trim().toUpperCase()
+      if (!code) return
+      const el = document.getElementById('scanResult')
+      el.innerHTML = '<p style="font-size:13px;color:var(--text-muted);padding:12px 0">Memuatkan...</p>'
+      try {
+        const v = await apiGetVisitorByRef(code)
+        if (!v) { el.innerHTML = '<p style="font-size:13px;color:var(--red);padding:12px 0">Kod rujukan tidak dijumpai.</p>'; return }
+        await renderScanResult(v)
+      } catch(e) { el.innerHTML = '<p style="font-size:13px;color:var(--red);padding:12px 0">Ralat pelayan.</p>' }
+    }
+
+    async function renderScanResult(v) {
+      const expired = isExpired(v)
+      let actionHtml = ''
+      if      (v.status === 'Checked Out')  actionHtml = `<div class="status-msg ok" style="background:rgba(76,175,125,.1);color:var(--green)">✓ Pelawat sudah Check Out</div>`
+      else if (v.status === 'Checked In')   actionHtml = `<button class="btn btn-outline" onclick="quickCheckout(${v.id})" style="width:100%">🚪 Check Out Sekarang</button>`
+      else if (expired)                     actionHtml = `<div class="status-msg err">⚠️ QR Tamat Tempoh (>24 jam)</div>`
+      else if (v.status === 'Approved')     actionHtml = `<button class="btn btn-gold" onclick="quickCheckin(${v.id})" style="width:100%">✓  Check In Sekarang</button>`
+      else if (v.status === 'Rejected')     actionHtml = `<div class="status-msg err">✕ Pelawat ditolak oleh pemilik</div>`
+      else                                  actionHtml = `<div class="status-msg warn">⏳ Belum diluluskan oleh pemilik unit</div>`
+
+      // Load contacts if pending
+      let contactHtml = ''
+      if (v.status === 'Pending') {
+        const owner = await apiGetOwner(v.unit)
+        if (owner) {
+          const contacts = [['Owner', owner.phone],owner.tenant1?['Tenant 1',owner.tenant1]:null,owner.tenant2?['Tenant 2',owner.tenant2]:null,owner.tenant3?['Tenant 3',owner.tenant3]:null].filter(Boolean)
+          contactHtml = `<div class="contact-block">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">HUBUNGI UNIT ${v.unit}</div>
+            ${contacts.map(([r,p])=>`<div class="contact-row"><span style="color:var(--text-muted)">${r}</span><a href="tel:${p}" style="font-family:'JetBrains Mono',monospace;color:var(--accent);text-decoration:none;font-weight:600">${p}</a></div>`).join('')}
+          </div>`
+        }
+      }
+
+      document.getElementById('scanResult').innerHTML = `
+        <div class="result-card animate-in">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+            <div style="font-family:var(--heading-font);font-size:18px;font-weight:800">${v.name}</div>
+            ${statusBadge(v.status)}
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:12px">${v.ref_code} · Unit ${v.unit}</div>
+          <div class="info-row"><span class="info-label">Tujuan</span><span>${v.purpose}</span></div>
+          <div class="info-row"><span class="info-label">Kenderaan</span><span>${v.vehicle_plate||'—'}</span></div>
+          <div class="info-row"><span class="info-label">Daftar</span><span>${fmtDate(v.created_at)}</span></div>
+          ${v.checked_in_at?`<div class="info-row"><span class="info-label">Masuk</span><span>${fmtDate(v.checked_in_at)}</span></div>`:''}
+          <div style="margin-top:12px">${actionHtml}</div>
+          ${contactHtml}
+        </div>`
+    }
+
+    async function quickCheckin(id) {
+      await apiUpdateVisitorStatus(id, 'Checked In')
+      showToast('✓ Check In berjaya!', 'success')
+      document.getElementById('scanInput').value = ''
+      document.getElementById('scanResult').innerHTML = ''
+    }
+    async function quickCheckout(id) {
+      await apiUpdateVisitorStatus(id, 'Checked Out')
+      showToast('✓ Check Out berjaya!', 'success')
+      document.getElementById('scanInput').value = ''
+      document.getElementById('scanResult').innerHTML = ''
+    }
+
+    // ── WALK-IN REGISTRATION ───────────────────────────────
+    function showWalkin() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="back-btn" onclick="showHome()">← Balik</div>
+        <div class="page-header animate-in">
+          <div class="page-icon teal">📝</div>
+          <h1 class="page-title">Daftar Walk-in</h1>
+          <p class="page-subtitle">Pilih unit & isi maklumat pelawat</p>
+        </div>
+        <div class="section animate-in" style="animation-delay:.04s">
+          <div class="section-title">UNIT YANG DILAWATI</div>
+          <div class="field">
+            <label>Tingkat</label>
+            <div class="select-wrap"><select id="wi-floor" onchange="onWiFloorChange()"><option value="">— Pilih tingkat —</option></select></div>
+          </div>
+          <div class="field" id="wi-unit-wrap" style="display:none">
+            <label>No. Unit</label>
+            <div class="select-wrap"><select id="wi-unit" onchange="onWiUnitChange()"><option value="">— Pilih unit —</option></select></div>
+          </div>
+          <div id="wi-contacts" style="display:none"></div>
+        </div>
+        <div class="section animate-in" style="animation-delay:.06s">
+          <div class="section-title">MAKLUMAT PELAWAT</div>
+          <div class="field"><label>Nama</label><input id="wi-name" placeholder="Nama seperti dalam IC"></div>
+          <div class="field"><label>No. IC</label><input id="wi-ic" placeholder="901234-56-7890"></div>
+          <div class="field"><label>No. Telefon</label><input id="wi-phone" type="tel" placeholder="0123456789"></div>
+          <div class="field">
+            <label>Jenis Kenderaan</label>
+            <div class="select-wrap">
+              <select id="wi-vtype" onchange="onWiVehicleChange()">
+                <option value="">— Pilih —</option>
+                <option value="Kereta">Kereta</option>
+                <option value="Motosikal">Motosikal</option>
+                <option value="Lori / Van">Lori / Van</option>
+                <option value="Tiada">Tiada Kenderaan</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" id="wi-plate-field">
+            <label>No. Plat</label><input id="wi-plate" style="text-transform:uppercase" placeholder="WXX 1234">
+          </div>
+          <div class="field">
+            <label>Tujuan</label>
+            <div class="select-wrap">
+              <select id="wi-purpose">
+                <option value="">— Pilih —</option>
+                <option value="Ziarah">Ziarah</option>
+                <option value="Hantar Barang">Hantar Barang</option>
+                <option value="Urusan Kerja">Urusan Kerja</option>
+                <option value="Pembaikan">Pembaikan</option>
+                <option value="Lain-lain">Lain-lain</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-gold animate-in" onclick="submitWalkin()" id="wi-btn" style="animation-delay:.08s">✓  Daftar & Check In</button>
+        <div id="wi-result"></div>`
+
+      // Build floor select
+      const fs = document.getElementById('wi-floor')
+      FLOORS.forEach(f => { const o=document.createElement('option'); o.value=f; o.textContent='Tingkat '+f; fs.appendChild(o) })
+    }
+
+    function onWiFloorChange() {
+      const f = document.getElementById('wi-floor').value
+      const us = document.getElementById('wi-unit')
+      document.getElementById('wi-unit-wrap').style.display = f ? 'block' : 'none'
+      document.getElementById('wi-contacts').style.display = 'none'
+      us.innerHTML = '<option value="">— Pilih unit —</option>'
+      if (!f) return
+      UNITS.forEach(u => { const o=document.createElement('option'); o.value=f+'-'+u; o.textContent='Unit '+u; us.appendChild(o) })
+    }
+
+    async function onWiUnitChange() {
+      const unit = document.getElementById('wi-unit').value
+      const el   = document.getElementById('wi-contacts')
+      if (!unit) { el.style.display = 'none'; return }
+      const owner = await apiGetOwner(unit)
+      if (!owner) { el.style.display = 'none'; return }
+      const contacts = [['Owner',owner.phone],owner.tenant1?['Tenant 1',owner.tenant1]:null,owner.tenant2?['Tenant 2',owner.tenant2]:null,owner.tenant3?['Tenant 3',owner.tenant3]:null].filter(Boolean)
+      el.style.display = 'block'
+      el.innerHTML = `<div class="contact-block" style="margin-top:0;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">HUBUNGI PEMILIK/PENYEWA</div>
+        ${contacts.map(([r,p])=>`<div class="contact-row"><span style="color:var(--text-muted)">${r}</span><a href="tel:${p}" style="font-family:'JetBrains Mono',monospace;color:var(--accent);text-decoration:none;font-weight:600">${p}</a></div>`).join('')}
+      </div>`
+    }
+
+    function onWiVehicleChange() {
+      const v = document.getElementById('wi-vtype').value
+      document.getElementById('wi-plate-field').style.display = v === 'Tiada' ? 'none' : 'block'
+      if (v === 'Tiada') document.getElementById('wi-plate').value = 'TIADA'
+      else if (document.getElementById('wi-plate').value === 'TIADA') document.getElementById('wi-plate').value = ''
+    }
+
+    async function submitWalkin() {
+      const unit    = document.getElementById('wi-unit').value
+      const name    = document.getElementById('wi-name').value.trim()
+      const ic_no   = document.getElementById('wi-ic').value.trim()
+      const phone   = document.getElementById('wi-phone').value.trim()
+      const vtype   = document.getElementById('wi-vtype').value
+      const plate   = document.getElementById('wi-plate').value.trim().toUpperCase()
+      const purpose = document.getElementById('wi-purpose').value
+      if (!unit||!name||!ic_no||!phone||!plate||!purpose) { showToast('Sila isi semua maklumat.','error-toast'); return }
+      const btn = document.getElementById('wi-btn')
+      btn.textContent='⏳ ...'; btn.disabled=true
+      try {
+        const result = await apiRegisterVisitor({name,ic_no,phone,vehicle_type:vtype,vehicle_plate:plate,unit,purpose,registered_by:'guard',registered_phone:null})
+        // Guard approve + checkin immediately
+        await apiUpdateVisitorStatus(result.id,'Approved',{approved_by:'guard-'+session.username})
+        await apiUpdateVisitorStatus(result.id,'Checked In')
+        showToast('✓ Check In berjaya!','success')
+        document.getElementById('wi-result').innerHTML=`<div class="section animate-in" style="margin-top:14px;background:rgba(76,175,125,.08);border-color:rgba(76,175,125,.3)"><div style="text-align:center;padding:8px"><div style="font-size:24px;margin-bottom:6px">✅</div><div style="font-family:var(--heading-font);font-weight:700">${name}</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">Unit ${unit} · ${result.ref_code}</div><div style="font-size:12px;color:var(--green);margin-top:4px;font-weight:600">Checked In</div></div></div>`
+      } catch(e) { showToast('Ralat pelayan.','error-toast') }
+      finally { btn.textContent='✓  Daftar & Check In'; btn.disabled=false }
+    }
+
+    // ── CHECKOUT ───────────────────────────────────────────
+    function showCheckout() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="back-btn" onclick="showHome()">← Balik</div>
+        <div class="page-header animate-in">
+          <div class="page-icon" style="background:rgba(159,122,234,.12);border:1px solid rgba(159,122,234,.2)">🚪</div>
+          <h1 class="page-title">Check Out Pelawat</h1>
+          <p class="page-subtitle">Masukkan kod rujukan pelawat yang nak keluar</p>
+        </div>
+        <div class="section animate-in" style="animation-delay:.05s">
+          <div class="section-title">KOD RUJUKAN</div>
+          <input id="coInput" style="text-transform:uppercase;margin-bottom:8px" placeholder="KESXXXXXX" onkeydown="if(event.key==='Enter')doCheckout()">
+          <button class="btn btn-gold" onclick="doCheckout()">🚪  Check Out</button>
+          <div id="coResult"></div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="section-title" style="margin-bottom:10px">PELAWAT YANG MASIH DALAM</div>
+          <div id="insideList"><p style="font-size:13px;color:var(--text-muted);text-align:center;padding:20px">Memuatkan...</p></div>
+        </div>`
+      loadInsideVisitors()
+    }
+
+    async function loadInsideVisitors() {
+      const all = await apiGetAllVisitors()
+      const inside = all.filter(v => v.status === 'Checked In')
+      const el = document.getElementById('insideList')
+      if (!inside.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🚪</div><p>Tiada pelawat dalam bangunan.</p></div>'; return }
+      el.innerHTML = inside.map((v,i)=>`
+        <div class="vis-card in animate-in" style="animation-delay:${i*0.04}s">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <div class="vis-name">${v.name}</div>
+            <button class="btn-sm btn-checkout" onclick="checkoutById(${v.id},'${v.ref_code}')">🚪 Keluar</button>
+          </div>
+          <div class="vis-meta">${v.ref_code} · Unit ${v.unit}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${v.purpose} · ${v.vehicle_plate||'—'}</div>
+          <div style="font-size:11px;color:var(--green);margin-top:4px">↓ Masuk: ${fmtDate(v.checked_in_at)}</div>
+        </div>`).join('')
+    }
+
+    async function doCheckout() {
+      const code = document.getElementById('coInput').value.trim().toUpperCase()
+      if (!code) return
+      const v = await apiGetVisitorByRef(code)
+      const el = document.getElementById('coResult')
+      if (!v) { el.innerHTML='<p style="color:var(--red);font-size:13px;padding:12px 0">Kod tidak dijumpai.</p>'; return }
+      if (v.status !== 'Checked In') { el.innerHTML=`<p style="color:var(--accent);font-size:13px;padding:12px 0">Status semasa: ${v.status}</p>`; return }
+      await apiUpdateVisitorStatus(v.id,'Checked Out')
+      showToast('✓ Check Out berjaya!','success')
+      document.getElementById('coInput').value=''
+      el.innerHTML=`<div style="padding:12px 0;font-size:13px;color:var(--green)">✓ ${v.name} (${v.ref_code}) telah Check Out.</div>`
+      loadInsideVisitors()
+    }
+
+    async function checkoutById(id, ref) {
+      await apiUpdateVisitorStatus(id,'Checked Out')
+      showToast('✓ Check Out berjaya!','success')
+      loadInsideVisitors()
+    }
+
+    // ── LOG ────────────────────────────────────────────────
+    async function showLog() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="back-btn" onclick="showHome()">← Balik</div>
+        <div class="page-header animate-in">
+          <div class="page-icon gold">📋</div>
+          <h1 class="page-title">Log Pelawat</h1>
+          <p class="page-subtitle">Semua rekod hari ini</p>
+        </div>
+        <div style="margin-bottom:10px">
+          <input id="logSearch" oninput="filterLog()" style="height:40px" placeholder="Cari nama, unit, kod...">
+        </div>
+        <div id="logContent" class="animate-in"><p style="font-size:13px;color:var(--text-muted);text-align:center;padding:24px">Memuatkan...</p></div>`
+      const all = await apiGetAllVisitors()
+      const today = new Date().toDateString()
+      window._allLog = all.filter(v => new Date(v.created_at).toDateString() === today)
+      filterLog()
+    }
+
+    function filterLog() {
+      const s = (document.getElementById('logSearch')?.value||'').toUpperCase()
+      const list = s ? window._allLog.filter(v=>v.ref_code.includes(s)||v.name.toUpperCase().includes(s)||v.unit.includes(s)) : window._allLog
+      const el = document.getElementById('logContent')
+      if (!list.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Tiada rekod hari ini.</p></div>'; return }
+      el.innerHTML = list.map((v,i)=>`
+        <div class="vis-card animate-in ${v.status==='Checked In'?'in':v.status==='Checked Out'?'out':''}" style="animation-delay:${i*0.03}s">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <div class="vis-name">${v.name}</div>${statusBadge(v.status)}
+          </div>
+          <div class="vis-meta">${v.ref_code} · Unit ${v.unit} · ${fmtDate(v.created_at)}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${v.purpose} · ${v.vehicle_plate||'—'}</div>
+          ${v.checked_in_at?`<div style="font-size:11px;color:var(--green);margin-top:4px">↓ ${fmtDate(v.checked_in_at)}</div>`:''}
+          ${v.checked_out_at?`<div style="font-size:11px;color:var(--text-muted)">↑ ${fmtDate(v.checked_out_at)}</div>`:''}
+        </div>`).join('')
+    }
+
+    showHome()
+  </script>
+</body>
+</html>

@@ -23,7 +23,6 @@
     .info-row:last-child{border-bottom:none}
     .info-label{color:var(--text-muted)}
     .info-val{font-weight:600;text-align:right;max-width:60%}
-    .pending-note{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--accent);margin-top:14px;line-height:1.6}
     .approved-note{background:var(--green-dim,rgba(76,175,125,.1));border:1px solid rgba(76,175,125,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--green);margin-top:14px;line-height:1.6}
   </style>
 </head>
@@ -35,15 +34,15 @@
     <div id="formView">
       <div class="page-header animate-in">
         <div class="page-icon teal">📝</div>
-        <h1 class="page-title">Daftar Pelawat</h1>
-        <p class="page-subtitle" id="txt-subtitle"></p>
+        <h1 class="page-title" data-i18n="vis_reg_title">Daftar Pelawat</h1>
+        <p class="page-subtitle" data-i18n="vis_reg_sub">Sila isi maklumat untuk melawat</p>
       </div>
 
       <!-- UNIT -->
       <div class="section animate-in" style="animation-delay:.04s">
-        <div class="section-title" id="txt-unit-section">UNIT YANG DILAWATI</div>
+        <div class="section-title" data-i18n="vis_sec_unit">UNIT YANG DILAWATI</div>
         <div class="field">
-          <label>Tingkat</label>
+          <label data-i18n="res_floor_label">Tingkat</label>
           <div class="select-wrap">
             <select id="floorSelect" onchange="onFloorChange()">
               <option value="">— Pilih Tingkat —</option>
@@ -51,7 +50,7 @@
           </div>
         </div>
         <div class="field" id="unitField" style="display:none">
-          <label>No. Unit</label>
+          <label data-i18n="res_unit_label">No. Unit</label>
           <div class="select-wrap">
             <select id="unitSelect" onchange="onUnitChange()">
               <option value="">— Pilih Unit —</option>
@@ -59,7 +58,7 @@
           </div>
         </div>
         <div id="unitConfirm" style="display:none;padding:10px 14px;background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),.25);border-radius:8px;margin-top:-4px">
-          <span style="font-size:12px;color:var(--text-muted)">Unit dipilih:</span>
+          <span style="font-size:12px;color:var(--text-muted)">Unit:</span>
           <span id="unitConfirmVal" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);margin-left:8px"></span>
         </div>
         <input type="hidden" id="unit">
@@ -67,88 +66,90 @@
 
       <!-- VISITOR INFO -->
       <div class="section animate-in" style="animation-delay:.06s">
-        <div class="section-title" id="txt-sec-info"></div>
+        <div class="section-title" data-i18n="vis_sec_info">MAKLUMAT PELAWAT</div>
         <div class="field">
-          <label id="txt-name-label"></label>
-          <input id="visName" type="text">
+          <label data-i18n="vis_name">Nama Penuh</label>
+          <input id="visName" type="text" data-i18n="vis_name_ph" placeholder="Nama IC">
         </div>
         <div class="field">
-          <label id="txt-ic-label"></label>
-          <input id="visIc" type="text">
+          <label data-i18n="vis_ic">No. IC</label>
+          <input id="visIc" type="text" data-i18n="vis_ic_ph" placeholder="900101-10-1234">
         </div>
         <div class="field">
-          <label id="txt-phone-label"></label>
-          <input id="visPhone" type="tel">
+          <label data-i18n="vis_phone">No. Telefon</label>
+          <input id="visPhone" type="tel" data-i18n="vis_phone_ph" placeholder="0123456789">
         </div>
       </div>
 
       <!-- VEHICLE -->
       <div class="section animate-in" style="animation-delay:.08s">
-        <div class="section-title" id="txt-sec-vehicle"></div>
+        <div class="section-title" data-i18n="vis_sec_veh">KENDERAAN</div>
         <div class="field">
-          <label id="txt-vtype-label"></label>
+          <label data-i18n="vis_v_type">Jenis Kenderaan</label>
           <div class="select-wrap">
             <select id="visVehicleType" onchange="onVehicleChange()">
-              <option value="" id="opt-vtype-ph"></option>
-              <option value="Kereta" id="opt-car"></option>
-              <option value="Motosikal" id="opt-moto"></option>
-              <option value="Lori / Van" id="opt-lorry"></option>
-              <option value="Tiada" id="opt-none"></option>
+              <option value="" data-i18n="vis_v_type_ph">— Pilih —</option>
+              <option value="Kereta" data-i18n="vis_v_car">Kereta</option>
+              <option value="Motosikal" data-i18n="vis_v_moto">Motosikal</option>
+              <option value="Lori / Van" data-i18n="vis_v_lorry">Lori / Van</option>
+              <option value="Tiada" data-i18n="vis_v_none">Tiada Kenderaan</option>
             </select>
           </div>
         </div>
         <div class="field" id="plateField">
-          <label id="txt-plate-label"></label>
-          <input id="visPlate" type="text" style="text-transform:uppercase">
+          <label data-i18n="vis_v_plate">No. Plat</label>
+          <input id="visPlate" type="text" style="text-transform:uppercase" data-i18n="vis_v_plate_ph">
         </div>
       </div>
 
       <!-- PURPOSE -->
       <div class="section animate-in" style="animation-delay:.1s">
-        <div class="section-title" id="txt-sec-purpose"></div>
+        <div class="section-title" data-i18n="vis_sec_purp">TUJUAN LAWATAN</div>
         <div class="field">
-          <label id="txt-purpose-label"></label>
+          <label data-i18n="vis_purpose">Tujuan</label>
           <div class="select-wrap">
             <select id="visPurpose">
-              <option value="" id="opt-purpose-ph"></option>
-              <option value="Ziarah" id="opt-visit"></option>
-              <option value="Hantar Barang" id="opt-delivery"></option>
-              <option value="Urusan Kerja" id="opt-work"></option>
-              <option value="Pembaikan" id="opt-repair"></option>
-              <option value="Lain-lain" id="opt-other"></option>
+              <option value="" data-i18n="vis_purpose_ph">— Pilih —</option>
+              <option value="Ziarah" data-i18n="vis_purp_visit">Ziarah</option>
+              <option value="Hantar Barang" data-i18n="vis_purp_del">Hantar Barang</option>
+              <option value="Kerja" data-i18n="vis_purp_work">Kerja</option>
+              <option value="Pembaikan" data-i18n="vis_purp_rep">Pembaikan</option>
+              <option value="Lain-lain" data-i18n="vis_purp_oth">Lain-lain</option>
             </select>
           </div>
         </div>
       </div>
 
-      <button class="btn btn-gold animate-in" style="animation-delay:.12s" onclick="registerVisitor()" id="txt-submit"></button>
+      <button class="btn btn-gold animate-in" style="animation-delay:.12s" onclick="registerVisitor()" id="txt-submit" data-i18n="vis_submit">Daftar Sekarang</button>
     </div>
 
     <!-- SUCCESS VIEW -->
     <div id="successView" style="display:none" class="animate-in">
       <div class="success-card">
         <div style="font-size:48px;margin-bottom:12px">✅</div>
-        <h2 style="font-family:var(--heading-font);font-size:20px;font-weight:800;margin-bottom:6px" id="txt-success-title"></h2>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px" id="txt-success-sub"></p>
+        <h2 style="font-family:var(--heading-font);font-size:20px;font-weight:800;margin-bottom:6px" data-i18n="vis_success">Pendaftaran Berjaya!</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px" data-i18n="vis_success_sub">Ready (Auto-Lulus).</p>
 
         <div class="ref-box">
-          <div class="ref-label" id="txt-ref-label"></div>
+          <div class="ref-label" data-i18n="vis_ref_code">KOD RUJUKAN</div>
           <div class="ref-code" id="refCode"></div>
         </div>
         <div class="action-btns">
-          <button class="btn-action" id="copyBtn" onclick="copyCode()">📋 <span id="txt-copy-btn"></span></button>
-          <button class="btn-action" onclick="downloadQR()">⬇️ <span id="txt-dl-btn"></span></button>
+          <button class="btn-action" id="copyBtn" onclick="copyCode()">📋 <span data-i18n="vis_copy_code">Salin Kod</span></button>
+          <button class="btn-action" onclick="downloadQR()">⬇️ <span data-i18n="vis_download_qr">Muat Turun</span></button>
         </div>
         <div class="qr-wrap">
           <div id="qrCanvas"></div>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:10px" id="txt-qr-hint"></p>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:10px" data-i18n="vis_qr_hint"></p>
         </div>
-        <div id="statusNote"></div>
+        <div id="statusNote">
+           <div class="approved-note">✅ Pendaftaran telah <strong>auto-diluluskan</strong>. Sila tunjukkan QR kepada guard untuk Check In segera.</div>
+        </div>
         <div style="margin-top:16px;text-align:left">
-          <div class="section-title" id="txt-details-label"></div>
+          <div class="section-title" data-i18n="vis_details">MAKLUMAT PENDAFTARAN</div>
           <div id="detailRows"></div>
         </div>
-        <button class="btn btn-gold" style="margin-top:20px" onclick="resetForm()" id="txt-new-reg"></button>
+        <button class="btn btn-gold" style="margin-top:20px" onclick="resetForm()" data-i18n="vis_new_reg"></button>
       </div>
     </div>
   </main>
@@ -161,198 +162,99 @@
   <script src="js/api.js"></script>
   <script src="js/helpers.js"></script>
   <script>
-    renderNav(fromGuard ? 'guard_title' : 'card_owner')
-
     const urlParams  = new URLSearchParams(location.search)
     const fromOwner  = urlParams.get('from') === 'owner'
     const fromGuard  = urlParams.get('from') === 'guard'
     const preUnit    = urlParams.get('unit') || ''
+    
+    renderNav(fromGuard ? 'role_security' : 'role_owner')
 
-    document.getElementById('txt-subtitle').textContent  = fromGuard ? 'Daftar pelawat walk-in' : 'Daftar pelawat untuk unit anda'
-    document.getElementById('txt-sec-info').textContent  = t('vis_sec_info')
-    document.getElementById('txt-name-label').textContent = t('vis_name')
-    document.getElementById('visName').placeholder        = t('vis_name_ph')
-    document.getElementById('txt-ic-label').textContent  = t('vis_ic')
-    document.getElementById('visIc').placeholder         = t('vis_ic_ph')
-    document.getElementById('txt-phone-label').textContent = t('vis_phone')
-    document.getElementById('visPhone').placeholder      = t('vis_phone_ph')
-    document.getElementById('txt-sec-vehicle').textContent = t('vis_sec_vehicle')
-    document.getElementById('txt-vtype-label').textContent = t('vis_vehicle_type')
-    document.getElementById('opt-vtype-ph').textContent  = t('vis_vehicle_type_ph')
-    document.getElementById('opt-car').textContent       = t('vis_vehicle_car')
-    document.getElementById('opt-moto').textContent      = t('vis_vehicle_moto')
-    document.getElementById('opt-lorry').textContent     = t('vis_vehicle_lorry')
-    document.getElementById('opt-none').textContent      = t('vis_vehicle_none')
-    document.getElementById('txt-plate-label').textContent = t('vis_vehicle_plate')
-    document.getElementById('visPlate').placeholder      = t('vis_vehicle_plate_ph')
-    document.getElementById('txt-sec-purpose').textContent = t('vis_sec_purpose')
-    document.getElementById('txt-purpose-label').textContent = t('vis_purpose')
-    document.getElementById('opt-purpose-ph').textContent = t('vis_purpose_ph')
-    document.getElementById('opt-visit').textContent     = t('vis_purpose_visit')
-    document.getElementById('opt-delivery').textContent  = t('vis_purpose_delivery')
-    document.getElementById('opt-work').textContent      = t('vis_purpose_work')
-    document.getElementById('opt-repair').textContent    = t('vis_purpose_repair')
-    document.getElementById('opt-other').textContent     = t('vis_purpose_other')
-    document.getElementById('txt-submit').textContent    = '✓  ' + t('vis_submit')
-
-    // Build floor/unit selects
+    // Dropdown unit logic
     const floorSel = document.getElementById('floorSelect')
     FLOORS.forEach(f => {
-      const o = document.createElement('option')
-      o.value = f; o.textContent = 'Tingkat ' + f
-      floorSel.appendChild(o)
+      const o = document.createElement('option'); o.value = f; 
+      o.textContent = t('res_floor_label') + ' ' + f; floorSel.appendChild(o)
     })
 
     function onFloorChange() {
-      const f  = floorSel.value
-      const us = document.getElementById('unitSelect')
-      document.getElementById('unit').value = ''
-      document.getElementById('unitConfirm').style.display = 'none'
-      document.getElementById('unitField').style.display   = f ? 'block' : 'none'
+      const f  = floorSel.value; const us = document.getElementById('unitSelect')
+      document.getElementById('unit').value = ''; document.getElementById('unitConfirm').style.display = 'none'
+      document.getElementById('unitField').style.display = f ? 'block' : 'none'
       if (!f) return
-      us.innerHTML = '<option value="">— Pilih Unit —</option>'
+      us.innerHTML = `<option value="">${t('res_unit_ph')}</option>`
       UNITS.forEach(u => {
-        const o = document.createElement('option')
-        o.value = f + '-' + u; o.textContent = 'Unit ' + u
-        us.appendChild(o)
+        const o = document.createElement('option'); o.value = f + '-' + u; 
+        o.textContent = t('res_unit_label') + ' ' + u; us.appendChild(o)
       })
     }
 
     function onUnitChange() {
-      const v = document.getElementById('unitSelect').value
-      document.getElementById('unit').value = v
-      document.getElementById('unitConfirmVal').textContent = v
-      document.getElementById('unitConfirm').style.display = v ? 'block' : 'none'
+      const v = document.getElementById('unitSelect').value; document.getElementById('unit').value = v
+      document.getElementById('unitConfirmVal').textContent = v; document.getElementById('unitConfirm').style.display = v ? 'block' : 'none'
     }
 
     function onVehicleChange() {
       const v = document.getElementById('visVehicleType').value
       document.getElementById('plateField').style.display = v === 'Tiada' ? 'none' : 'block'
       if (v === 'Tiada') document.getElementById('visPlate').value = 'TIADA'
-      else if (document.getElementById('visPlate').value === 'TIADA') document.getElementById('visPlate').value = ''
     }
 
-    // Pre-fill and lock unit if from owner
     if (preUnit) {
-      const parts = preUnit.split('-')
-      if (parts.length >= 2) {
+      const parts = preUnit.split('-'); if (parts.length >= 2) {
         floorSel.value = parts[0]; onFloorChange()
-        setTimeout(() => {
-          document.getElementById('unitSelect').value = preUnit
-          onUnitChange()
-          // Lock unit selection for owner (they register for their own unit)
-          if (fromOwner) {
-            document.getElementById('floorSelect').disabled = true
-            document.getElementById('unitSelect').disabled  = true
-          }
-        }, 50)
+        setTimeout(() => { document.getElementById('unitSelect').value = preUnit; onUnitChange(); if (fromOwner) { document.getElementById('floorSelect').disabled = true; document.getElementById('unitSelect').disabled = true; } }, 50)
       }
     }
-
-    let currentRef = '', currentVisitorId = null
 
     async function registerVisitor() {
-      const unit          = document.getElementById('unit').value
-      const name          = document.getElementById('visName').value.trim()
-      const ic_no         = document.getElementById('visIc').value.trim()
-      const phone         = document.getElementById('visPhone').value.trim()
-      const vehicle_type  = document.getElementById('visVehicleType').value
-      const vehicle_plate = document.getElementById('visPlate').value.trim().toUpperCase()
-      const purpose       = document.getElementById('visPurpose').value
+      const unit = document.getElementById('unit').value; const name = document.getElementById('visName').value.trim()
+      const ic = document.getElementById('visIc').value.trim(); const tel = document.getElementById('visPhone').value.trim()
+      const vt = document.getElementById('visVehicleType').value; const vp = document.getElementById('visPlate').value.trim().toUpperCase()
+      const pr = document.getElementById('visPurpose').value
 
-      if (!unit || !name || !ic_no || !phone || !vehicle_plate || !purpose) {
-        showToast(t('vis_error_fill'), 'error-toast'); return
-      }
-
-      const btn = document.getElementById('txt-submit')
-      btn.textContent = '⏳ ' + t('loading'); btn.disabled = true
+      if (!unit || !name || !ic || !tel || !vp || !pr) { showToast(t('vis_error_fill'), 'error-toast'); return }
+      
+      const btn = document.getElementById('txt-submit'); btn.innerHTML = `⏳ ${t('loading')}`; btn.disabled = true
 
       try {
-        const registered_by = fromGuard ? 'guard' : (fromOwner ? 'owner' : 'tenant')
-        const result = await apiRegisterVisitor({ name, ic_no, phone, vehicle_type, vehicle_plate, unit, purpose, registered_by, registered_phone: null })
-        currentVisitorId = result.id
-
-        // Auto-approve if registered by owner
-        if (fromOwner) {
-          await apiUpdateVisitorStatus(result.id, 'Approved', { approved_by: 'owner-reg' })
+        const role = fromGuard ? 'guard' : (fromOwner ? 'owner' : 'visitor')
+        const expiry = new Date(); expiry.setHours(expiry.getHours() + 24)
+        
+        const payload = {
+          name, ic_no: ic, phone: tel, vehicle_type: vt, vehicle_plate: vp, unit, purpose: pr,
+          registered_by: role, status: 'Approved', approved_by: 'Auto-System', expires_at: expiry.toISOString()
         }
 
-        showSuccess(result, { name, ic_no, phone, vehicle_type, vehicle_plate, unit, purpose, registered_by })
-      } catch(e) {
-        showToast(t('error_server'), 'error-toast')
-        console.error(e)
-      } finally {
-        btn.textContent = '✓  ' + t('vis_submit'); btn.disabled = false
-      }
+        const result = await apiRegisterVisitor(payload)
+        showSuccess(result, payload)
+      } catch(e) { showToast(t('error_server'), 'error-toast') }
+      finally { btn.innerHTML = t('vis_submit'); btn.disabled = false }
     }
 
     function showSuccess(visitor, info) {
-      document.getElementById('formView').style.display    = 'none'
-      document.getElementById('successView').style.display = 'block'
-
-      document.getElementById('txt-success-title').textContent = t('vis_success_title')
-      document.getElementById('txt-success-sub').textContent   = info.registered_by === 'owner'
-        ? 'Kongsi QR code atau kod rujukan ini kepada pelawat anda.'
-        : t('vis_success_sub')
-      document.getElementById('txt-ref-label').textContent     = t('vis_ref_label')
-      document.getElementById('txt-qr-hint').textContent       = t('vis_qr_hint')
-      document.getElementById('txt-details-label').textContent = t('vis_details')
-      document.getElementById('txt-new-reg').textContent       = t('vis_new_reg')
-      document.getElementById('txt-copy-btn').textContent      = t('vis_copy_code')
-      document.getElementById('txt-dl-btn').textContent        = t('vis_download_qr')
-
-      currentRef = visitor.ref_code
-      document.getElementById('refCode').textContent = currentRef
-
+      document.getElementById('formView').style.display = 'none'; document.getElementById('successView').style.display = 'block'
+      const ref = visitor.ref_code; document.getElementById('refCode').textContent = ref
       const qc = document.getElementById('qrCanvas'); qc.innerHTML = ''
-      new QRCode(qc, { text: currentRef, width: 180, height: 180, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H })
-
-      // Status note
-      const note = document.getElementById('statusNote')
-      if (info.registered_by === 'owner') {
-        note.innerHTML = '<div class="approved-note">✅ Pelawat telah <strong>auto-diluluskan</strong>. Guard boleh terus Check In apabila pelawat tiba.</div>'
-      } else if (info.registered_by === 'guard') {
-        note.innerHTML = '<div class="pending-note">⏳ Guard perlu <strong>hubungi pemilik unit</strong> untuk kelulusan, kemudian klik "Lulus & Check In".</div>'
-      } else {
-        note.innerHTML = '<div class="pending-note">⏳ Pendaftaran perlu <strong>diluluskan oleh pemilik unit</strong> sebelum guard boleh Check In. Semak status di halaman "Semak Status".</div>'
-      }
-
-      const rows = [
-        [t('vis_name'), info.name],
-        [t('vis_ic'), info.ic_no],
-        [t('vis_phone'), info.phone],
-        ['Unit', info.unit],
-        [t('vis_purpose'), info.purpose],
-        [t('vis_vehicle_type'), info.vehicle_type || '—'],
-        [t('vis_vehicle_plate'), info.vehicle_plate],
-      ]
-      document.getElementById('detailRows').innerHTML = rows.map(([l, v]) =>
-        `<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`
-      ).join('')
+      new QRCode(qc, { text: ref, width: 180, height: 180, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H })
+      
+      const rows = [[t('vis_name'), info.name],[t('vis_ic'), info.ic_no],[t('vis_phone'), info.phone],['Unit', info.unit],[t('vis_purpose'), info.purpose],[t('vis_v_plate'), info.vehicle_plate]]
+      document.getElementById('detailRows').innerHTML = rows.map(([l, v]) => `<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`).join('')
+      window._currentRef = ref
     }
 
     function copyCode() {
-      navigator.clipboard.writeText(currentRef).then(() => {
-        const btn = document.getElementById('copyBtn')
-        btn.classList.add('btn-copied')
-        btn.innerHTML = '✓ <span>' + t('vis_copied') + '</span>'
-        setTimeout(() => { btn.classList.remove('btn-copied'); btn.innerHTML = '📋 <span>' + t('vis_copy_code') + '</span>' }, 2000)
+      navigator.clipboard.writeText(window._currentRef).then(() => {
+        const btn = document.getElementById('copyBtn'); btn.classList.add('btn-copied')
+        btn.innerHTML = `✓ ${t('vis_copied')}`; setTimeout(() => { btn.classList.remove('btn-copied'); btn.innerHTML = `📋 ${t('vis_copy_code')}` }, 2000)
       })
     }
 
     function downloadQR() {
       const canvas = document.querySelector('#qrCanvas canvas'); if (!canvas) return
-      const a = document.createElement('a'); a.download = 'visitor-' + currentRef + '.png'; a.href = canvas.toDataURL('image/png'); a.click()
+      const a = document.createElement('a'); a.download = 'visitor-' + window._currentRef + '.png'; a.href = canvas.toDataURL('image/png'); a.click()
     }
 
-    function resetForm() {
-      document.getElementById('successView').style.display = 'none'
-      document.getElementById('formView').style.display    = 'block'
-      ;['visName','visIc','visPhone','visPlate','unit'].forEach(id => document.getElementById(id).value = '')
-      ;['visVehicleType','visPurpose'].forEach(id => document.getElementById(id).value = '')
-      document.getElementById('floorSelect').value = ''; onFloorChange()
-      currentRef = ''; currentVisitorId = null
-    }
+    function resetForm() { location.reload() }
   </script>
 </body>
 </html>

@@ -2,43 +2,49 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kesuma JMB Hub</title>
+  <title>Kesuma JMB — Log Masuk</title>
   <link rel="manifest" href="site.webmanifest">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    body{display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden;padding-top:60px;box-sizing:border-box}
+    body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow-x:hidden}
     body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(var(--accent-rgb),.07) 0%,transparent 70%);pointer-events:none;z-index:0}
     .topbar{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
-    .topbar-logo{font-family:var(--heading-font);font-size:13px;font-weight:800;color:var(--text-muted);letter-spacing:-.3px}
+    .topbar-logo{font-family:var(--heading-font);font-size:13px;font-weight:800;color:var(--text-muted)}
     .topbar-right{display:flex;gap:8px;align-items:center}
-    .hero{position:relative;z-index:1;text-align:center;padding:28px clamp(12px,4vw,40px) 40px;width:min(480px,100%);margin:0 auto;box-sizing:border-box}
-    .badge{display:inline-block;background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),.3);color:var(--accent);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:20px;animation:fadeIn .5s ease both}
-    h1{font-family:var(--heading-font);font-size:clamp(34px,7vw,50px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:10px;animation:fadeIn .5s .08s ease both}
-    h1 span{color:var(--accent)}
-    .subtitle{color:var(--text-muted);font-size:13px;line-height:1.7;margin-bottom:28px;animation:fadeIn .5s .16s ease both}
-    .sys-block{width:100%;margin:0 auto 14px;animation:fadeIn .5s ease both}
-    .sys-label-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 2px}
-    .sys-tag{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}
-    .sys-line{flex:1;height:1px;background:var(--border)}
-    .sub-links{display:grid;gap:7px}
-    .sub-links-2{grid-template-columns:1fr 1fr}
-    .sub-links-3{grid-template-columns:1fr 1fr 1fr}
-    .sub-links-4{grid-template-columns:repeat(4,1fr)}
-    .sub-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:12px;font-weight:600;padding:10px 12px}
-    .sub-card:hover{border-color:rgba(var(--accent-rgb),.35);background:var(--surface)}
-    .sub-card-lg{padding:14px 12px;align-items:flex-start!important;gap:10px}
-    .sub-card-lg .sub-icon{font-size:20px;flex-shrink:0;margin-top:1px}
-    .sub-name{font-size:12px;font-weight:700;font-family:var(--heading-font);margin-bottom:2px}
-    .sub-desc{font-size:10px;color:var(--text-muted);font-weight:400;line-height:1.4}
-    .sub-card-icon{flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px 8px;gap:7px;font-size:11px;font-weight:700}
-    .sub-card-icon .sub-icon{font-size:20px}
-    .sub-card-sm{flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px 6px;gap:5px;font-size:10px}
-    .sub-card-sm .sub-icon{font-size:18px}
-    .sub-icon{font-size:15px}
-    .footer-section{width:100%;margin:0 auto;animation:fadeIn .5s .32s ease both}
-    .footer-note{position:relative;z-index:1;margin-top:24px;font-size:11px;color:var(--text-muted);opacity:.4;animation:fadeIn .5s .4s ease both}
+    .login-wrap{position:relative;z-index:1;width:min(420px,100%);padding:20px;box-sizing:border-box;margin-top:60px}
+    .login-header{text-align:center;margin-bottom:20px}
+    .login-logo{font-size:36px;margin-bottom:12px}
+    .login-title{font-family:var(--heading-font);font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:4px}
+    .login-title span{color:var(--accent)}
+    .login-sub{font-size:13px;color:var(--text-muted)}
+    
+    /* Panel Demo Collapsible */
+    .demo-panel{background:var(--accent-dim);border:1px dashed var(--accent);border-radius:12px;margin-bottom:20px;transition:all 0.3s ease;overflow:hidden}
+    .demo-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;user-select:none}
+    .demo-header:hover{background:rgba(var(--accent-rgb), 0.05)}
+    .demo-title{font-weight:800;color:var(--accent);letter-spacing:1px;text-transform:uppercase;font-size:10px}
+    .demo-chevron{font-size:10px;color:var(--accent);transition:transform 0.3s ease}
+    .demo-content{padding:0 16px 12px;display:none;animation:slideDown 0.3s ease forwards}
+    
+    /* State Open */
+    .demo-panel.open .demo-content{display:block}
+    .demo-panel.open .demo-chevron{transform:rotate(180deg)}
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .demo-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px;color:var(--text-soft);border-bottom:1px solid rgba(var(--accent-rgb), 0.1);padding-bottom:4px}
+    .demo-row:last-child{margin-bottom:0;border-bottom:none}
+    .demo-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text)}
+
+    .role-tabs{display:flex;gap:6px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:20px}
+    .role-tab{flex:1;text-align:center;padding:8px 4px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text-muted);font-family:var(--heading-font)}
+    .role-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+    .footer-note{position:fixed;bottom:12px;font-size:11px;color:var(--text-muted);opacity:.35}
   </style>
 </head>
 <body>
@@ -49,83 +55,204 @@
       <div id="langSwitcher"></div>
     </div>
   </div>
-  <div class="hero">
-    <div class="badge" id="txt-badge"></div>
-    <h1 id="txt-h1"></h1>
-    <p class="subtitle" id="txt-subtitle"></p>
 
-    <!-- VISITOR SYSTEM -->
-    <div class="sys-block" style="animation-delay:.18s">
-      <div class="sys-label-row">
-        <div class="sys-line"></div>
-        <span class="sys-tag" id="txt-visitor-tag"></span>
-        <div class="sys-line"></div>
+  <div class="login-wrap">
+    <div class="login-header animate-in">
+      <div class="login-logo">🏢</div>
+      <div class="login-title" data-i18n="login_title">Kesuma <span>JMB</span></div>
+      <div class="login-sub" data-i18n="login_sub">Residensi Kesuma, Beranang</div>
+    </div>
+
+    <!-- DEMO CREDENTIALS PANEL (COLLAPSIBLE) -->
+    <div class="demo-panel animate-in" style="animation-delay:.02s" id="demoPanel">
+      <div class="demo-header" onclick="toggleDemo()">
+        <div class="demo-title" data-i18n="demo_title">AKAUN DEMO</div>
+        <div class="demo-chevron" id="demoChevron">▼</div>
       </div>
-      <div class="sub-links sub-links-2">
-        <a href="visitor-check.html" class="sub-card sub-card-lg">
-          <span class="sub-icon">🔍</span>
-          <div><div class="sub-name" id="txt-vis-chk"></div><div class="sub-desc" id="txt-vis-chk-desc"></div></div>
-        </a>
-        <a href="owner.html" class="sub-card sub-card-lg" style="background:var(--accent-dim);border-color:rgba(var(--accent-rgb),.3)">
-          <span class="sub-icon">🪪</span>
-          <div><div class="sub-name" id="txt-vis-reg"></div><div class="sub-desc" id="txt-vis-reg-desc"></div></div>
-        </a>
+      <div class="demo-content">
+        <div class="demo-row">
+          <span data-i18n="login_resident">🏠 Residen</span>
+          <span class="demo-val" data-i18n="demo_res_hint">Unit 4-1 / Pass: 1234</span>
+        </div>
+        <div class="demo-row">
+          <span data-i18n="login_security">🛡️ Security</span>
+          <span class="demo-val">guard1 / kesuma1125</span>
+        </div>
+        <div class="demo-row">
+          <span data-i18n="login_admin">⚙️ Admin</span>
+          <span class="demo-val">admin / kesuma1125</span>
+        </div>
       </div>
     </div>
 
-    <!-- RESIDENTS -->
-    <div class="sys-block" style="animation-delay:.22s">
-      <div class="sys-label-row">
-        <div class="sys-line"></div>
-        <span class="sys-tag" id="txt-res-tag"></span>
-        <div class="sys-line"></div>
-      </div>
-      <div class="sub-links sub-links-3">
-        <a href="owner.html" class="sub-card sub-card-icon"><span class="sub-icon">🏠</span><span id="txt-owner"></span></a>
-        <a href="guard.html" class="sub-card sub-card-icon"><span class="sub-icon">🛡️</span><span id="txt-guard"></span></a>
-        <a href="admin.html" class="sub-card sub-card-icon"><span class="sub-icon">⚙️</span><span id="txt-admin"></span></a>
-      </div>
+    <!-- ROLE TABS -->
+    <div class="role-tabs animate-in" style="animation-delay:.05s">
+      <div class="role-tab active" onclick="switchRole('resident')" id="tab-resident" data-i18n="login_resident">🏠 Residen</div>
+      <div class="role-tab" onclick="switchRole('security')" id="tab-security" data-i18n="login_security">🛡️ Security</div>
+      <div class="role-tab" onclick="switchRole('admin')" id="tab-admin" data-i18n="login_admin">⚙️ Admin</div>
     </div>
 
-    <!-- INFO -->
-    <div class="footer-section">
-      <div class="sys-label-row" style="margin-bottom:8px">
-        <div class="sys-line"></div>
-        <span class="sys-tag" id="txt-info-tag"></span>
-        <div class="sys-line"></div>
+    <!-- RESIDENT LOGIN -->
+    <div id="form-resident" class="section animate-in" style="animation-delay:.08s">
+      <div class="section-title" data-i18n="login_res_title">LOG MASUK RESIDEN</div>
+      <div class="field">
+        <label data-i18n="res_type_label">Jenis Residen</label>
+        <div class="select-wrap">
+          <select id="res-type" onchange="onResTypeChange()">
+            <option value="" data-i18n="res_type_ph">— Pilih jenis —</option>
+            <option value="owner" data-i18n="owner">Pemilik (Owner)</option>
+            <option value="tenant" data-i18n="tenant">Penyewa (Tenant)</option>
+          </select>
+        </div>
       </div>
-      <div class="sub-links sub-links-4">
-        <a href="how.html" class="sub-card sub-card-sm"><span class="sub-icon">📖</span><span id="txt-how"></span></a>
-        <a href="plan.html" class="sub-card sub-card-sm"><span class="sub-icon">🚀</span><span id="txt-plan"></span></a>
-        <a href="about.html" class="sub-card sub-card-sm"><span class="sub-icon">✦</span><span id="txt-about"></span></a>
-        <a href="contact.html" class="sub-card sub-card-sm"><span class="sub-icon">💬</span><span id="txt-contact"></span></a>
+      <div id="res-unit-fields" style="display:none">
+        <div class="field">
+          <label data-i18n="res_floor_label">Tingkat</label>
+          <div class="select-wrap">
+            <select id="res-floor" onchange="onResFloorChange()">
+              <option value="" data-i18n="res_floor_ph">— Pilih tingkat —</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" id="res-unit-wrap" style="display:none">
+          <label data-i18n="res_unit_label">No. Unit</label>
+          <div class="select-wrap">
+            <select id="res-unit">
+              <option value="" data-i18n="res_unit_ph">— Pilih unit —</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="password_label">Password</label>
+          <input type="password" id="res-password" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
       </div>
+      <div class="error-text" id="res-error" style="margin-top:4px"></div>
+      <button class="btn btn-gold" onclick="doLogin()" id="res-btn" style="margin-top:4px" data-i18n="login_btn">→ Log Masuk</button>
+    </div>
+
+    <!-- SECURITY LOGIN -->
+    <div id="form-security" class="section animate-in" style="display:none;animation-delay:.08s">
+      <div class="section-title" data-i18n="login_sec_title">LOG MASUK SECURITY</div>
+      <div class="field">
+        <label data-i18n="username_label">Username</label>
+        <input id="sec-username" type="text" data-i18n="username_label" placeholder="Username" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="field">
+        <label data-i18n="password_label">Password</label>
+        <input id="sec-password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="error-text" id="sec-error" style="margin-top:4px"></div>
+      <button class="btn btn-gold" onclick="doLogin()" style="margin-top:4px" data-i18n="login_btn">→ Log Masuk</button>
+    </div>
+
+    <!-- ADMIN LOGIN -->
+    <div id="form-admin" class="section animate-in" style="display:none;animation-delay:.08s">
+      <div class="section-title" data-i18n="login_adm_title">LOG MASUK ADMIN</div>
+      <div class="field">
+        <label data-i18n="username_label">Username</label>
+        <input id="adm-username" type="text" data-i18n="username_label" placeholder="Username" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="field">
+        <label data-i18n="password_label">Password</label>
+        <input id="adm-password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="error-text" id="adm-error" style="margin-top:4px"></div>
+      <button class="btn btn-gold" onclick="doLogin()" style="margin-top:4px" data-i18n="login_btn">→ Log Masuk</button>
     </div>
   </div>
-  <p class="footer-note" id="txt-footer"></p>
+
+  <p class="footer-note" data-i18n="footer">Residensi Kesuma, Beranang · v2.2</p>
+
   <script src="js/i18n.js"></script>
   <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpers.js"></script>
   <script>
-    renderLangSwitcher('langSwitcher')
     renderThemeSwitcher('themeSwitcher')
-    document.getElementById('txt-badge').textContent=t('index_badge')
-    document.getElementById('txt-h1').innerHTML=t('index_title1')+'<br><span>'+t('index_title2')+'</span>'
-    document.getElementById('txt-subtitle').textContent=t('index_subtitle')
-    document.getElementById('txt-visitor-tag').textContent=t('sys_visitor')
-    document.getElementById('txt-vis-reg').textContent='Daftar Pelawat'
-    document.getElementById('txt-vis-reg-desc').textContent='Visitor daftar sendiri'
-    document.getElementById('txt-vis-chk').textContent=t('vis_check_title')
-    document.getElementById('txt-vis-chk-desc').textContent='Semak status permohonan'
-    document.getElementById('txt-res-tag').textContent=t('sys_resident')
-    document.getElementById('txt-owner').textContent=t('card_owner')
-    document.getElementById('txt-guard').textContent=t('card_guard')
-    document.getElementById('txt-admin').textContent=t('card_admin')
-    document.getElementById('txt-info-tag').textContent=t('info_tag')
-    document.getElementById('txt-how').textContent=t('card_how')
-    document.getElementById('txt-plan').textContent=t('plan_short')
-    document.getElementById('txt-about').textContent=t('card_about')
-    document.getElementById('txt-contact').textContent=t('contact_title')
-    document.getElementById('txt-footer').textContent=t('footer')
+    renderLangSwitcher('langSwitcher')
+
+    // Fungsi Toggle Collapsible
+    function toggleDemo() {
+      const panel = document.getElementById('demoPanel');
+      panel.classList.toggle('open');
+    }
+
+    const existing = getSession()
+    if (existing) redirectRole(existing.role)
+
+    let currentRole = 'resident'
+
+    function switchRole(role) {
+      currentRole = role
+      ;['resident','security','admin'].forEach(r => {
+        document.getElementById('tab-'+r).classList.toggle('active', r === role)
+        document.getElementById('form-'+r).style.display = r === role ? 'block' : 'none'
+      })
+    }
+
+    const floorSel = document.getElementById('res-floor')
+    FLOORS.forEach(f => {
+      const o = document.createElement('option'); o.value = f; 
+      o.textContent = t('res_floor_label') + ' ' + f
+      floorSel.appendChild(o)
+    })
+
+    function onResTypeChange() {
+      const v = document.getElementById('res-type').value
+      document.getElementById('res-unit-fields').style.display = v ? 'block' : 'none'
+    }
+
+    function onResFloorChange() {
+      const f = document.getElementById('res-floor').value
+      const us = document.getElementById('res-unit')
+      document.getElementById('res-unit-wrap').style.display = f ? 'block' : 'none'
+      us.innerHTML = `<option value="">${t('res_unit_ph')}</option>`
+      if (!f) return
+      UNITS.forEach(u => {
+        const o = document.createElement('option'); o.value = f+'-'+u; 
+        o.textContent = t('res_unit_label') + ' ' + u
+        us.appendChild(o)
+      })
+    }
+
+    async function doLogin() {
+      const btn = document.querySelector(`#form-${currentRole} .btn`)
+      const err = document.getElementById(`${currentRole === 'resident' ? 'res' : currentRole === 'security' ? 'sec' : 'adm'}-error`)
+      
+      let session = null;
+      btn.innerHTML = `⏳ ${t('loading')}`; btn.disabled = true;
+
+      try {
+        if (currentRole === 'resident') {
+          const type = document.getElementById('res-type').value
+          const unit = document.getElementById('res-unit').value
+          const password = document.getElementById('res-password').value
+          if (!type || !unit || !password) { throw new Error(t('vis_error_fill')) }
+          session = await apiLoginResident(unit, password)
+        } else {
+          const username = document.getElementById(`${currentRole === 'security' ? 'sec' : 'adm'}-username`).value.trim()
+          const password = document.getElementById(`${currentRole === 'security' ? 'sec' : 'adm'}-password`).value
+          if (!username || !password) { throw new Error(t('vis_error_fill')) }
+          session = (currentRole === 'security') ? await apiLoginSecurity(username, password) : await apiLoginAdmin(username, password)
+        }
+
+        if (!session) throw new Error(t('admin_pin_error'))
+
+        saveSession(session)
+        redirectRole(session.role)
+      } catch(e) {
+        err.textContent = e.message;
+      } finally {
+        btn.innerHTML = `<span>${t('login_btn')}</span>`; btn.disabled = false;
+      }
+    }
+
+    function redirectRole(role) {
+      if (role === 'owner' || role === 'tenant') location.href = 'resident.html'
+      else if (role === 'security') location.href = 'security.html'
+      else if (role === 'admin') location.href = 'admin.html'
+    }
   </script>
 </body>
 </html>

@@ -85,10 +85,8 @@
       <!-- SCAN BOX -->
       <div class="scan-box animate-in" style="animation-delay:.08s">
         <div class="section-title" id="txt-scan-title"></div>
-        <div style="display:flex;gap:8px">
-          <input id="scanInput" style="flex:1;text-transform:uppercase" onkeydown="if(event.key==='Enter')doScan()">
-          <button class="btn btn-gold" onclick="doScan()" style="flex-shrink:0;padding:0 16px" id="txt-scan-btn"></button>
-        </div>
+        <input id="scanInput" style="text-transform:uppercase;margin-bottom:8px" onkeydown="if(event.key==='Enter')doScan()">
+        <button class="btn btn-gold" onclick="doScan()" id="txt-scan-btn"></button>
         <div id="scanResult"></div>
       </div>
 
